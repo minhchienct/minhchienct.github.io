@@ -1,0 +1,39 @@
+name: Deploy to GitHub Pages
+
+# Quy trình này sẽ chạy mỗi khi có push lên nhánh main
+on:
+  push:
+    branches:
+      - main  # Hoặc 'master' nếu đó là nhánh chính của bạn
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # Sử dụng một máy ảo Ubuntu mới nhất để chạy job
+
+    steps:
+      # Bước 1: Checkout code từ repository của bạn
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Hành động chính thức để checkout code
+
+      # Bước 2: Thiết lập môi trường Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4 # Hành động chính thức để cài đặt Node.js
+        with:
+          node-version: '18' # Chỉ định phiên bản Node.js bạn muốn sử dụng (ví dụ: 16, 18, 20)
+
+      # Bước 3: Cài đặt các dependency của dự án
+      # Sử dụng npm ci để cài đặt nhanh và ổn định từ package-lock.json
+      - name: Install dependencies
+        run: npm ci
+
+      # Bước 4: Build và Deploy ứng dụng
+      # Lệnh này sẽ chạy script 'deploy' trong package.json của bạn
+      # (Script này thường bao gồm 'npm run build' và 'gh-pages -d build')
+      - name: Build and Deploy
+        run: |
+          git config --global user.name '${{ github.actor }}' # Cấu hình tên người dùng git
+          git config --global user.email '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com' # Cấu hình email git
+          npm run deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Cung cấp token để gh-pages có thể push lên repo
+          
