@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Order Hàng - Giao Diện Mẫu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+        .date-display {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        .supplier-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .supplier-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        td input[type="number"], td input[type="text"] {
+            width: 90%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        td.item-name {
+            width: 40%;
+        }
+        td.quantity, td.unit {
+            width: 20%;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .actions button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        .actions button:hover {
+            background-color: #0056b3;
+        }
+        .add-item-section { /* Placeholder for add item/supplier functionality */
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .add-item-section input, .add-item-section button {
+            padding: 8px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quản Lý Order Hàng Hằng Ngày</h1>
+        <div class="date-display">
+            Ngày hiện tại: <span id="current-date">01/06/2025</span> </div>
+
+        <div class="supplier-section">
+            <h2 class="supplier-title">Nhà Cung Cấp Rau Củ</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên Mặt Hàng</th>
+                        <th>Ngày Cũ (SL)</th>
+                        <th>Ngày Mới (SL)</th>
+                        <th>Đơn Vị</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="item-name">Cà chua</td>
+                        <td>5</td>
+                        <td><input type="number" min="0" placeholder="Nhập SL"></td>
+                        <td>kg</td>
+                    </tr>
+                    <tr>
+                        <td class="item-name">Dưa leo</td>
+                        <td>10</td>
+                        <td><input type="number" min="0" placeholder="Nhập SL"></td>
+                        <td>kg</td>
+                    </tr>
+                    <tr>
+                        <td class="item-name">Hành lá</td>
+                        <td>2</td>
+                        <td><input type="number" min="0" placeholder="Nhập SL"></td>
+                        <td>bó</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="add-item-section">
+                <input type="text" placeholder="Tên mặt hàng mới">
+                <input type="text" placeholder="Đơn vị">
+                <button>Thêm Mặt Hàng</button>
+            </div>
+        </div>
+
+        <div class="supplier-section">
+            <h2 class="supplier-title">Nhà Cung Cấp Thịt Cá</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên Mặt Hàng</th>
+                        <th>Ngày Cũ (SL)</th>
+                        <th>Ngày Mới (SL)</th>
+                        <th>Đơn Vị</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="item-name">Thịt heo ba chỉ</td>
+                        <td>3</td>
+                        <td><input type="number" min="0" placeholder="Nhập SL"></td>
+                        <td>kg</td>
+                    </tr>
+                    <tr>
+                        <td class="item-name">Cá diêu hồng</td>
+                        <td>4</td>
+                        <td><input type="number" min="0" placeholder="Nhập SL"></td>
+                        <td>con</td>
+                    </tr>
+                </tbody>
+            </table>
+             <div class="add-item-section">
+                <input type="text" placeholder="Tên mặt hàng mới">
+                <input type="text" placeholder="Đơn vị">
+                <button>Thêm Mặt Hàng</button>
+            </div>
+        </div>
+
+        <div class="add-item-section" style="margin-bottom: 20px; background-color: #d4edda;">
+            <input type="text" placeholder="Tên nhà cung cấp mới">
+            <button>Thêm Nhà Cung Cấp</button>
+        </div>
+
+        <div class="actions">
+            <button id="btnExportOrder">Xuất Order</button>
+            <button id="btnNewDay">Chuyển Ngày Mới</button>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript cơ bản để hiển thị ngày (ví dụ)
+        // Trong một ứng dụng thực tế, bạn sẽ cần nhiều JS hơn cho các chức năng khác.
+        function formatDate(date) {
+            let day = String(date.getDate()).padStart(2, '0');
+            let month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+            let year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+        const currentDateElement = document.getElementById('current-date');
+        if (currentDateElement) {
+            currentDateElement.textContent = formatDate(new Date());
+        }
+
+        // Các nút bấm hiện tại không có chức năng, chỉ là giao diện
+        document.getElementById('btnExportOrder').addEventListener('click', function() {
+            alert('Chức năng Xuất Order cần được lập trình!');
+        });
+        document.getElementById('btnNewDay').addEventListener('click', function() {
+            alert('Chức năng Chuyển Ngày Mới cần được lập trình!');
+        });
+    </script>
+</body>
+</html>
