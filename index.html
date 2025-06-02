@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học Tiếng Anh Cơ Bản</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fef6e4;
+        }
+        
+        .cute-btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .cute-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .lesson-card {
+            transition: all 0.3s ease;
+            background-color: #f3d2c1;
+        }
+        
+        .lesson-card:hover {
+            transform: scale(1.02);
+            background-color: #fef6e4;
+        }
+        
+        .speech-bubble {
+            position: relative;
+            background: #8bd3dd;
+            border-radius: 1rem;
+        }
+        
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: #8bd3dd transparent;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e2e8f0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 5px;
+            background-color: #f582ae;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-[#f582ae] text-white shadow-md">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-book-open text-3xl"></i>
+                    <h1 class="text-2xl font-bold">Học Tiếng Anh Vui Vẻ</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center space-x-2">
+                        <i class="fas fa-user-circle text-2xl"></i>
+                        <span>Xin chào, Học viên!</span>
+                    </div>
+                    <button class="bg-white text-[#f582ae] px-4 py-2 rounded-full cute-btn font-medium">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Đăng nhập
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-[#fef6e4] py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0">
+                    <h2 class="text-4xl font-bold text-[#001858] mb-4">Học tiếng Anh thật dễ dàng!</h2>
+                    <p class="text-lg text-[#172c66] mb-6">Khám phá thế giới tiếng Anh với các bài học vui nhộn, dễ hiểu dành cho người mới bắt đầu.</p>
+                    <div class="flex space-x-4">
+                        <button class="bg-[#f582ae] text-white px-6 py-3 rounded-full cute-btn font-medium">
+                            <i class="fas fa-play mr-2"></i>Bắt đầu học
+                        </button>
+                        <button class="border-2 border-[#f582ae] text-[#f582ae] px-6 py-3 rounded-full cute-btn font-medium">
+                            <i class="fas fa-info-circle mr-2"></i>Tìm hiểu thêm
+                        </button>
+                    </div>
+                </div>
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="relative w-64 h-64 md:w-80 md:h-80">
+                        <div class="absolute inset-0 bg-[#8bd3dd] rounded-full opacity-20"></div>
+                        <div class="absolute inset-4 bg-[#f582ae] rounded-full opacity-20"></div>
+                        <img src="https://img.icons8.com/color/480/000000/english.png" alt="Learn English" class="relative w-full h-full object-contain">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Section -->
+    <section class="bg-white py-8 shadow-inner">
+        <div class="container mx-auto px-4">
+            <div class="bg-[#f3d2c1] rounded-2xl p-6">
+                <h3 class="text-xl font-semibold text-[#001858] mb-4">Tiến trình học tập của bạn</h3>
+                <div class="mb-2 flex justify-between">
+                    <span class="text-[#172c66]">20% hoàn thành</span>
+                    <span class="text-[#172c66]">Bài 4/20</span>
+                </div>
+                <div class="progress-bar mb-6">
+                    <div class="progress-fill" style="width: 20%;"></div>
+                </div>
+                <button class="bg-[#001858] text-white px-6 py-2 rounded-full cute-btn">
+                    <i class="fas fa-arrow-right mr-2"></i>Tiếp tục học
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lessons Section -->
+    <section class="py-12 bg-[#fef6e4]">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-[#001858] mb-8 text-center">Các bài học</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Lesson 1 -->
+                <div class="lesson-card rounded-xl p-6 shadow-md cursor-pointer">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="bg-[#8bd3dd] text-[#001858] rounded-full w-12 h-12 flex items-center justify-center">
+                            <i class="fas fa-award text-xl"></i>
+                        </div>
+                        <span class="bg-[#f582ae] text-white text-sm px-3 py-1 rounded-full">Mới</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-[#001858] mb-2">Chào hỏi cơ bản</h3>
+                    <p class="text-[#172c66] mb-4">Học cách chào hỏi và giới thiệu bản thân bằng tiếng Anh</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex space-x-1 text-yellow-400">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                            <i class="far fa-star"></i>
+                        </div>
+                        <button class="text-[#f582ae] font-medium">
+                            Bắt đầu <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Lesson 2 -->
+                <div class="lesson-card rounded-xl p-6 shadow-md cursor-pointer">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="bg-[#f582ae] text-white rounded-full w-12 h-12 flex items-center justify-center">
+                            <i class="fas fa-utensils text-xl"></i>
+                        </div>
+                        <span class="bg-[#8bd3dd] text-[#001858] text-sm px-3 py-1 rounded-full">Phổ biến</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-[#001858] mb-2">Đồ ăn & Nhà hàng</h3>
+                    <p class="text-[#172c66] mb-4">Từ vựng và mẫu câu khi gọi món trong nhà hàng</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex space-x-1 text-yellow-400">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                        </div>
+                        <button class="text-[#f582ae] font-medium">
+                            Bắt đầu <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Lesson 3 -->
+                <div class="lesson-card rounded-xl p-6 shadow-md cursor-pointer">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="bg-[#f3d2c1] text-[#001858] rounded-full w-12 h-12 flex items-center justify-center">
+                            <i class="fas fa-shopping-bag text-xl"></i>
+                        </div>
+                        <span class="bg-[#f3d2c1] text-[#001858] text-sm px-3 py-1 rounded-full">Thực hành</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-[#001858] mb-2">Mua sắm</h3>
+                    <p class="text-[#172c66] mb-4">Hỏi giá, mặc cả và thanh toán khi đi mua sắm</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex space-x-1 text-yellow-400">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <button class="text-[#f582ae] font-medium">
+                            Bắt đầu <i class="fas fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-10">
+
+            </html>
