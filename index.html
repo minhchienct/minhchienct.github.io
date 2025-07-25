@@ -29,7 +29,8 @@
       let app;
       let db;
       let auth;
-      let userId = "anonymous"; // Default to anonymous
+      // userId is no longer displayed but kept for potential internal use if needed
+      let userId = "anonymous";
 
       // Global categories object to store data fetched from Firestore
       // Structure: { [categoryName]: { id: 'firestoreDocId', color: '#hex', products: [{ id: 'prodId', name: '...', quantity: 0 }] } }
@@ -41,9 +42,6 @@
           console.error(
             "Firestore DB not initialized. Cannot set up listeners."
           );
-          document.getElementById("loadingMessage").textContent =
-            "Lỗi: Cơ sở dữ liệu chưa được khởi tạo.";
-          document.getElementById("loadingMessage").style.color = "#dc3545";
           return; // Ensure db is initialized
         }
         console.log("Setting up Firestore listeners..."); // Log when listeners are being set up
@@ -81,13 +79,9 @@
             ); // Deep copy to avoid reference issues in log
             renderCategories(); // Re-render the UI with updated data
             updateCategorySelect(); // Update dropdown for product addition
-            document.getElementById("loadingMessage").style.display = "none"; // Hide loading after data is loaded
           },
           (error) => {
             console.error("Error fetching categories:", error);
-            document.getElementById("loadingMessage").textContent =
-              "Lỗi tải dữ liệu. Vui lòng kiểm tra kết nối và quy tắc bảo mật Firestore.";
-            document.getElementById("loadingMessage").style.color = "#dc3545";
           }
         );
       }
@@ -121,32 +115,211 @@
               console.log("Firebase sign-in successful.");
             } catch (error) {
               console.error("Firebase Auth Error:", error);
-              document.getElementById(
-                "loadingMessage"
-              ).textContent = `Lỗi xác thực Firebase: ${error.message}. Vui lòng kiểm tra cấu hình Firebase và quy tắc bảo mật.`;
-              document.getElementById("loadingMessage").style.color = "#dc3545";
             }
           } else {
             console.log("Firebase user already signed in:", user.uid);
           }
           userId = auth.currentUser?.uid || crypto.randomUUID(); // Get user ID
-          document.getElementById(
-            "userIdDisplay"
-          ).textContent = `ID người dùng: ${userId}`;
-          document.getElementById("loadingMessage").style.display = "none"; // Hide loading message
           setupFirestoreListeners(); // Setup listeners after auth is ready
+          loadDefaultCSV(); // Load default CSV after Firebase is ready
         });
       } else {
         console.warn("Firebase config not available. Running in local mode.");
-        document.getElementById("loadingMessage").textContent =
-          "Cấu hình Firebase không khả dụng. Ứng dụng sẽ chạy ở chế độ cục bộ (dữ liệu sẽ không được lưu).";
-        document.getElementById("loadingMessage").style.color = "orange";
-        // If Firebase config is not available, the app will run locally without persistence
         userId = crypto.randomUUID(); // Generate a local ID
-        document.getElementById(
-          "userIdDisplay"
-        ).textContent = `ID người dùng (local): ${userId}`;
-        document.getElementById("loadingMessage").style.display = "none";
+        loadDefaultCSV(); // Load default CSV immediately in local mode
+      }
+
+      // Helper function to process CSV text from any source (default file or user upload)
+      async function _processCsvText(csvText, msgElement) {
+        const lines = csvText.split("\n").filter((line) => line.trim() !== "");
+        let successCount = 0;
+        let errorCount = 0;
+
+        const productsByCategories = {}; // { 'CategoryName': ['Product1', 'Product2'] }
+
+        for (let i = 0; i < lines.length; i++) {
+          // Process all lines
+          const line = lines[i].trim();
+          const parts = line.split(",");
+          if (parts.length >= 2) {
+            const categoryName = parts[0].trim();
+            const productName = parts[1].trim();
+            if (categoryName && productName) {
+              if (!productsByCategories[categoryName]) {
+                productsByCategories[categoryName] = [];
+              }
+              productsByCategories[categoryName].push(productName);
+            } else {
+              errorCount++;
+              console.warn(`Skipping malformed CSV line: "${line}"`);
+            }
+          } else {
+            errorCount++;
+            console.warn(`Skipping malformed CSV line: "${line}"`);
+          }
+        }
+
+        const defaultColor = "#f0f4ff";
+
+        for (const categoryName in productsByCategories) {
+          const newProductsForCategory = productsByCategories[categoryName];
+
+          let categoryDocId = null;
+          let currentProductsInFirestore = [];
+          let categoryExistsInFirestore = false;
+
+          // Try to get existing category data from Firestore
+          if (db && window.categories[categoryName]) {
+            categoryDocId = window.categories[categoryName].id;
+            try {
+              const docRef = doc(
+                db,
+                `/artifacts/${appId}/public/data/categories`,
+                categoryDocId
+              );
+              const docSnap = await getDoc(docRef);
+              if (docSnap.exists()) {
+                currentProductsInFirestore = docSnap.data().products || [];
+                categoryExistsInFirestore = true;
+                console.log(
+                  `[CSV_Processor] Fetched latest products for "${categoryName}" from Firestore for batch update:`,
+                  JSON.parse(JSON.stringify(currentProductsInFirestore))
+                );
+              } else {
+                console.warn(
+                  `[CSV_Processor] Category document "${categoryName}" not found in Firestore despite being in local cache. Will create new.`
+                );
+                categoryDocId = null; // Force creation
+              }
+            } catch (e) {
+              errorCount++; // Count this as an error for the category
+              console.error(
+                `[CSV_Processor] Error fetching category "${categoryName}" for batch update:`,
+                e
+              );
+              categoryDocId = null; // Treat as not found
+            }
+          } else if (!db && window.categories[categoryName]) {
+            // Local mode fallback
+            currentProductsInFirestore =
+              window.categories[categoryName].products;
+            categoryExistsInFirestore = true;
+            console.warn(
+              `[CSV_Processor] Running in local mode. Using local cache for products of "${categoryName}" for batch update.`
+            );
+          }
+
+          // Merge new products, avoiding duplicates
+          const mergedProducts = [...currentProductsInFirestore];
+          let productsAddedToThisCategory = 0;
+
+          newProductsForCategory.forEach((newProductName) => {
+            const productExists = mergedProducts.some(
+              (p) => p.name === newProductName
+            );
+            if (!productExists) {
+              mergedProducts.push({ name: newProductName, quantity: 0 });
+              productsAddedToThisCategory++;
+            } else {
+              console.log(
+                `[CSV_Processor] Product "${newProductName}" already exists in category "${categoryName}". Skipping.`
+              );
+            }
+          });
+
+          if (productsAddedToThisCategory > 0) {
+            // Only update if new products were actually added
+            if (db) {
+              try {
+                if (categoryExistsInFirestore && categoryDocId) {
+                  console.log(
+                    `[CSV_Processor] Updating category "${categoryName}" (Doc ID: ${categoryDocId}) with ${productsAddedToThisCategory} new products.`
+                  );
+                  const categoryDocRef = doc(
+                    db,
+                    `/artifacts/${appId}/public/data/categories`,
+                    categoryDocId
+                  );
+                  await updateDoc(categoryDocRef, { products: mergedProducts });
+                } else {
+                  console.log(
+                    `[CSV_Processor] Adding new category "${categoryName}" with ${productsAddedToThisCategory} products.`
+                  );
+                  await addDoc(
+                    collection(
+                      db,
+                      `/artifacts/${appId}/public/data/categories`
+                    ),
+                    {
+                      name: categoryName,
+                      color: defaultColor,
+                      products: mergedProducts,
+                    }
+                  );
+                }
+                successCount += productsAddedToThisCategory;
+              } catch (e) {
+                errorCount += productsAddedToThisCategory;
+                console.error(
+                  `[CSV_Processor] Error during batch update/add for category "${categoryName}":`,
+                  e
+                );
+              }
+            } else {
+              // Local mode fallback
+              if (!window.categories[categoryName]) {
+                window.categories[categoryName] = {
+                  products: [],
+                  color: defaultColor,
+                };
+              }
+              window.categories[categoryName].products = mergedProducts;
+              renderCategories(); // Re-render in local mode
+              successCount += productsAddedToThisCategory;
+              console.warn(
+                `[CSV_Processor] Category "${categoryName}" updated/added locally with ${productsAddedToThisCategory} products.`
+              );
+            }
+          } else {
+            console.log(
+              `[CSV_Processor] No new unique products to add for category "${categoryName}".`
+            );
+          }
+        }
+
+        if (msgElement) {
+          msgElement.innerText = `Đã nhập thành công ${successCount} sản phẩm. Lỗi: ${errorCount}.`;
+          msgElement.style.color =
+            successCount > 0 ? "#28a745" : errorCount > 0 ? "#ffc107" : "#666";
+        }
+        return { successCount, errorCount };
+      }
+
+      async function loadDefaultCSV() {
+        console.log(
+          "Attempting to load default CSV from 'danhsach_order.csv'..."
+        );
+        try {
+          const response = await fetch("danhsach_order.csv");
+          if (!response.ok) {
+            if (response.status === 404) {
+              console.warn(
+                "Default CSV file 'danhsach_order.csv' not found. Skipping default load."
+              );
+            } else {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return;
+          }
+          const csvText = await response.text();
+          console.log(
+            "Default CSV file 'danhsach_order.csv' loaded successfully. Processing content..."
+          );
+          await _processCsvText(csvText, null); // Pass null for msgElement as it's a background load
+          console.log("Default CSV data processed.");
+        } catch (error) {
+          console.error("Error loading default CSV file:", error);
+        }
       }
 
       // --- Functions for UI interaction (exposed globally) ---
@@ -460,166 +633,7 @@
         const reader = new FileReader();
         reader.onload = async function (e) {
           const text = e.target.result;
-          const lines = text.split("\n").filter((line) => line.trim() !== ""); // Filter out empty lines
-          let successCount = 0;
-          let errorCount = 0;
-
-          const productsByCategories = {}; // { 'CategoryName': ['Product1', 'Product2'] }
-
-          for (let i = 0; i < lines.length; i++) {
-            // Process all lines
-            const line = lines[i].trim();
-            const parts = line.split(",");
-            if (parts.length >= 2) {
-              const categoryName = parts[0].trim();
-              const productName = parts[1].trim();
-              if (categoryName && productName) {
-                if (!productsByCategories[categoryName]) {
-                  productsByCategories[categoryName] = [];
-                }
-                productsByCategories[categoryName].push(productName);
-              } else {
-                errorCount++;
-                console.warn(`Skipping malformed CSV line: "${line}"`);
-              }
-            } else {
-              errorCount++;
-              console.warn(`Skipping malformed CSV line: "${line}"`);
-            }
-          }
-
-          const defaultColor = "#f0f4ff";
-
-          for (const categoryName in productsByCategories) {
-            const newProductsForCategory = productsByCategories[categoryName];
-
-            let categoryDocId = null;
-            let currentProductsInFirestore = [];
-            let categoryExistsInFirestore = false;
-
-            // Try to get existing category data from Firestore
-            if (db && window.categories[categoryName]) {
-              categoryDocId = window.categories[categoryName].id;
-              try {
-                const docRef = doc(
-                  db,
-                  `/artifacts/${appId}/public/data/categories`,
-                  categoryDocId
-                );
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                  currentProductsInFirestore = docSnap.data().products || [];
-                  categoryExistsInFirestore = true;
-                  console.log(
-                    `[importCSV] Fetched latest products for "${categoryName}" from Firestore for batch update:`,
-                    JSON.parse(JSON.stringify(currentProductsInFirestore))
-                  );
-                } else {
-                  console.warn(
-                    `[importCSV] Category document "${categoryName}" not found in Firestore despite being in local cache. Will create new.`
-                  );
-                  categoryDocId = null; // Force creation
-                }
-              } catch (e) {
-                console.error(
-                  `[importCSV] Error fetching category "${categoryName}" for batch update:`,
-                  e
-                );
-                categoryDocId = null; // Treat as not found
-              }
-            } else if (!db && window.categories[categoryName]) {
-              // Local mode fallback
-              currentProductsInFirestore =
-                window.categories[categoryName].products;
-              categoryExistsInFirestore = true;
-              console.warn(
-                `[importCSV] Running in local mode. Using local cache for products of "${categoryName}" for batch update.`
-              );
-            }
-
-            // Merge new products, avoiding duplicates
-            const mergedProducts = [...currentProductsInFirestore];
-            let productsAddedToThisCategory = 0;
-
-            newProductsForCategory.forEach((newProductName) => {
-              const productExists = mergedProducts.some(
-                (p) => p.name === newProductName
-              );
-              if (!productExists) {
-                mergedProducts.push({ name: newProductName, quantity: 0 });
-                productsAddedToThisCategory++;
-              } else {
-                console.log(
-                  `[importCSV] Product "${newProductName}" already exists in category "${categoryName}". Skipping.`
-                );
-              }
-            });
-
-            if (productsAddedToThisCategory > 0) {
-              // Only update if new products were actually added
-              if (db) {
-                try {
-                  if (categoryExistsInFirestore && categoryDocId) {
-                    console.log(
-                      `[importCSV] Updating category "${categoryName}" (Doc ID: ${categoryDocId}) with ${productsAddedToThisCategory} new products.`
-                    );
-                    const categoryDocRef = doc(
-                      db,
-                      `/artifacts/${appId}/public/data/categories`,
-                      categoryDocId
-                    );
-                    await updateDoc(categoryDocRef, {
-                      products: mergedProducts,
-                    });
-                  } else {
-                    console.log(
-                      `[importCSV] Adding new category "${categoryName}" with ${productsAddedToThisCategory} products.`
-                    );
-                    await addDoc(
-                      collection(
-                        db,
-                        `/artifacts/${appId}/public/data/categories`
-                      ),
-                      {
-                        name: categoryName,
-                        color: defaultColor,
-                        products: mergedProducts,
-                      }
-                    );
-                  }
-                  successCount += productsAddedToThisCategory;
-                } catch (e) {
-                  errorCount += productsAddedToThisCategory;
-                  console.error(
-                    `[importCSV] Error during batch update/add for category "${categoryName}":`,
-                    e
-                  );
-                }
-              } else {
-                // Local mode fallback
-                if (!window.categories[categoryName]) {
-                  window.categories[categoryName] = {
-                    products: [],
-                    color: defaultColor,
-                  };
-                }
-                window.categories[categoryName].products = mergedProducts;
-                renderCategories(); // Re-render in local mode
-                successCount += productsAddedToThisCategory;
-                console.warn(
-                  `[importCSV] Category "${categoryName}" updated/added locally with ${productsAddedToThisCategory} products.`
-                );
-              }
-            } else {
-              console.log(
-                `[importCSV] No new unique products to add for category "${categoryName}".`
-              );
-            }
-          }
-
-          csvImportMsg.innerText = `Đã nhập thành công ${successCount} sản phẩm. Lỗi: ${errorCount}.`;
-          csvImportMsg.style.color =
-            successCount > 0 ? "#28a745" : errorCount > 0 ? "#ffc107" : "#666";
+          await _processCsvText(text, csvImportMsg);
           fileInput.value = ""; // Clear file input
         };
 
@@ -662,23 +676,14 @@
 
       h1 {
         margin: 0;
-        font-size: 28px;
-        color: #4a4a4a;
+        font-size: 32px; /* Increased font size for title */
+        color: #e6a8d7; /* Soft mauve/rose color */
+        font-family: "Georgia", serif; /* Elegant font */
         text-align: center;
-        /* Padding adjusted for smaller screens in media query */
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
       }
 
-      #userIdDisplay {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        font-size: 0.8em;
-        color: #666;
-        background-color: rgba(255, 255, 255, 0.7);
-        padding: 5px 10px;
-        border-radius: 8px;
-        z-index: 10;
-      }
+      /* Removed #userIdDisplay as per request */
 
       .add-buttons {
         position: absolute;
@@ -747,6 +752,9 @@
         min-width: 280px; /* Reduced min-width for very small screens */
         max-width: 95%; /* Increased max-width percentage */
         box-sizing: border-box;
+        /* Added for scrollable popup content */
+        max-height: 90vh; /* Limit overall popup height */
+        overflow-y: auto; /* Make the popup itself scrollable */
       }
 
       .popup h3 {
@@ -778,17 +786,49 @@
       }
 
       .popup .close {
-        position: absolute;
-        top: 8px; /* Adjusted top for better alignment */
-        right: 12px; /* Adjusted right for better alignment */
+        position: sticky; /* Make it sticky */
+        top: 0; /* Stick to the top of its scrollable parent */
+        right: 12px; /* Keep existing right position */
         font-size: 24px; /* Adjusted font size */
         cursor: pointer;
         color: #aaa;
         transition: color 0.2s;
+        background-color: white; /* Ensure it has a background when sticky */
+        padding: 5px 10px; /* Add some padding for better click area */
+        border-radius: 0 0 8px 8px; /* Optional: rounded bottom corners */
+        z-index: 1001; /* Ensure it's above other content in popup */
+        display: block; /* Ensure it takes up space for sticky to work */
+        text-align: right; /* Align the X to the right */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+        margin-bottom: -5px; /* Pull it up slightly if needed */
       }
-
       .popup .close:hover {
         color: #666;
+      }
+
+      /* New style for the scrollable content wrapper inside the popup */
+      .result-content-wrapper {
+        white-space: pre-line;
+        font-family: "Courier New", monospace;
+        background-color: #f8f8f8;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #eee;
+        max-height: 250px; /* This is the scrollable area height */
+        overflow-y: auto; /* Make content scrollable */
+        font-size: 14px;
+        margin-bottom: 15px; /* Space between content and copy button */
+      }
+
+      #resultPopup #resultContent {
+        /* Target the actual content div inside the wrapper */
+        /* Remove any conflicting overflow/height from here if present */
+        /* Ensure it doesn't have its own max-height/overflow-y */
+        height: auto; /* Let content grow */
+        overflow: visible; /* Let wrapper handle scroll */
+        padding: 0; /* Remove padding if wrapper has it */
+        border: none; /* Remove border if wrapper has it */
+        background: none; /* Remove background if wrapper has it */
       }
 
       .product-grid {
@@ -841,15 +881,9 @@
       }
 
       #resultPopup {
-        white-space: pre-line;
-        font-family: "Courier New", monospace;
-        background-color: #f8f8f8;
-        padding: 12px; /* Reduced padding */
-        border-radius: 10px;
-        border: 1px solid #eee;
-        max-height: 250px; /* Reduced max-height */
-        overflow-y: auto;
-        font-size: 14px; /* Adjusted font size */
+        /* This ID is for the main popup container */
+        /* No content-specific styles here anymore */
+        /* max-height and overflow-y moved to .popup */
       }
 
       .copy-btn {
@@ -869,13 +903,7 @@
         color: #28a745; /* Green for success */
       }
 
-      #loadingMessage {
-        text-align: center;
-        margin-top: 50px;
-        font-size: 1.2em;
-        color: #666;
-        display: none; /* Hidden by default, shown by JS */
-      }
+      /* Removed #loadingMessage as per request */
 
       /* Media queries for very small screens (e.g., less than 480px width) */
       @media (max-width: 480px) {
@@ -958,7 +986,7 @@
   </head>
   <body>
     <header>
-      <div id="userIdDisplay"></div>
+      <!-- Removed userIdDisplay div -->
       <h1>Design by MinhChien</h1>
       <div class="add-buttons">
         <button onclick="showPopup('categoryPopup')">+ Thêm danh mục</button>
@@ -968,7 +996,7 @@
       </div>
     </header>
 
-    <div id="loadingMessage"></div>
+    <!-- Removed loadingMessage div -->
     <div class="container" id="categoryContainer">
       <!-- Danh mục và sản phẩm sẽ được thêm vào đây -->
     </div>
@@ -1013,7 +1041,10 @@
     <div class="popup" id="resultPopup">
       <span class="close" onclick="hidePopup('resultPopup')">&times;</span>
       <h3>Kết quả</h3>
-      <div id="resultContent"></div>
+      <div class="result-content-wrapper">
+        <!-- New wrapper for scrollable content -->
+        <div id="resultContent"></div>
+      </div>
       <button class="copy-btn" onclick="copyResult()">Copy</button>
     </div>
   </body>
