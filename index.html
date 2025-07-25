@@ -1,215 +1,1020 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Học Tiếng Anh Cơ Bản</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Design by MinhChien</title>
+    <!-- Firebase SDKs -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import {
+        getAuth,
+        signInAnonymously,
+        signInWithCustomToken,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        onSnapshot,
+        addDoc,
+        doc,
+        updateDoc,
+        deleteDoc,
+        query,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+      // Global Firebase variables
+      let app;
+      let db;
+      let auth;
+      let userId = "anonymous"; // Default to anonymous
+
+      // Global categories object to store data fetched from Firestore
+      // Structure: { [categoryName]: { id: 'firestoreDocId', color: '#hex', products: [{ id: 'prodId', name: '...', quantity: 0 }] } }
+      window.categories = {}; // Make it global for access from HTML functions
+
+      // Function to set up real-time listeners for categories and products
+      function setupFirestoreListeners() {
+        if (!db) {
+          console.error(
+            "Firestore DB not initialized. Cannot set up listeners."
+          );
+          document.getElementById("loadingMessage").textContent =
+            "Lỗi: Cơ sở dữ liệu chưa được khởi tạo.";
+          document.getElementById("loadingMessage").style.color = "#dc3545";
+          return; // Ensure db is initialized
+        }
+        console.log("Setting up Firestore listeners..."); // Log when listeners are being set up
+
+        const categoriesColRef = collection(
+          db,
+          `/artifacts/${appId}/public/data/categories`
+        );
+        const q = query(categoriesColRef);
+
+        onSnapshot(
+          q,
+          (snapshot) => {
+            console.log(
+              "Firestore snapshot received! Number of documents:",
+              snapshot.size
+            ); // Log received snapshot
+            // Clear existing categories to re-render
+            window.categories = {};
+            if (snapshot.empty) {
+              console.log("No categories found in Firestore.");
+            }
+            snapshot.forEach((doc) => {
+              const data = doc.data();
+              console.log("Category data from Firestore:", data); // Log each category data
+              window.categories[data.name] = {
+                id: doc.id,
+                color: data.color,
+                products: data.products || [], // Ensure products array exists
+              };
+            });
+            console.log(
+              "[onSnapshot] Current window.categories state after snapshot:",
+              JSON.parse(JSON.stringify(window.categories))
+            ); // Deep copy to avoid reference issues in log
+            renderCategories(); // Re-render the UI with updated data
+            updateCategorySelect(); // Update dropdown for product addition
+            document.getElementById("loadingMessage").style.display = "none"; // Hide loading after data is loaded
+          },
+          (error) => {
+            console.error("Error fetching categories:", error);
+            document.getElementById("loadingMessage").textContent =
+              "Lỗi tải dữ liệu. Vui lòng kiểm tra kết nối và quy tắc bảo mật Firestore.";
+            document.getElementById("loadingMessage").style.color = "#dc3545";
+          }
+        );
+      }
+
+      // Initialize Firebase
+      const firebaseConfig =
+        typeof __firebase_config !== "undefined"
+          ? JSON.parse(__firebase_config)
+          : {};
+      const appId =
+        typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+
+      if (Object.keys(firebaseConfig).length > 0) {
+        console.log("Firebase config found. Initializing app...");
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        // Sign in anonymously or with custom token
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) {
+            console.log("No Firebase user found, attempting sign-in...");
+            try {
+              if (typeof __initial_auth_token !== "undefined") {
+                console.log("Signing in with custom token...");
+                await signInWithCustomToken(auth, __initial_auth_token);
+              } else {
+                console.log("Signing in anonymously...");
+                await signInAnonymously(auth);
+              }
+              console.log("Firebase sign-in successful.");
+            } catch (error) {
+              console.error("Firebase Auth Error:", error);
+              document.getElementById(
+                "loadingMessage"
+              ).textContent = `Lỗi xác thực Firebase: ${error.message}. Vui lòng kiểm tra cấu hình Firebase và quy tắc bảo mật.`;
+              document.getElementById("loadingMessage").style.color = "#dc3545";
+            }
+          } else {
+            console.log("Firebase user already signed in:", user.uid);
+          }
+          userId = auth.currentUser?.uid || crypto.randomUUID(); // Get user ID
+          document.getElementById(
+            "userIdDisplay"
+          ).textContent = `ID người dùng: ${userId}`;
+          document.getElementById("loadingMessage").style.display = "none"; // Hide loading message
+          setupFirestoreListeners(); // Setup listeners after auth is ready
+        });
+      } else {
+        console.warn("Firebase config not available. Running in local mode.");
+        document.getElementById("loadingMessage").textContent =
+          "Cấu hình Firebase không khả dụng. Ứng dụng sẽ chạy ở chế độ cục bộ (dữ liệu sẽ không được lưu).";
+        document.getElementById("loadingMessage").style.color = "orange";
+        // If Firebase config is not available, the app will run locally without persistence
+        userId = crypto.randomUUID(); // Generate a local ID
+        document.getElementById(
+          "userIdDisplay"
+        ).textContent = `ID người dùng (local): ${userId}`;
+        document.getElementById("loadingMessage").style.display = "none";
+      }
+
+      // --- Functions for UI interaction (exposed globally) ---
+      window.showPopup = function (id) {
+        document.getElementById(id).style.display = "block";
+        if (id === "categoryPopup")
+          document.getElementById("categoryMsg").innerText = "";
+        if (id === "productPopup")
+          document.getElementById("productMsg").innerText = "";
+        if (id === "csvImportPopup")
+          document.getElementById("csvImportMsg").innerText = "";
+      };
+
+      window.hidePopup = function (id) {
+        document.getElementById(id).style.display = "none";
+      };
+
+      window.addCategory = async function () {
+        const name = document.getElementById("newCategoryName").value.trim();
+        const defaultColor = "#f0f4ff"; // Always use default color for manual add
+        if (!name) {
+          document.getElementById("categoryMsg").innerText =
+            "Vui lòng nhập tên danh mục!";
+          document.getElementById("categoryMsg").style.color = "#dc3545";
+          return;
+        }
+        if (window.categories[name]) {
+          document.getElementById("categoryMsg").innerText =
+            "Danh mục đã tồn tại!";
+          document.getElementById("categoryMsg").style.color = "#ffc107";
+          return;
+        }
+
+        if (db) {
+          try {
+            console.log("Adding category to Firestore:", {
+              name,
+              color: defaultColor,
+              products: [],
+            });
+            await addDoc(
+              collection(db, `/artifacts/${appId}/public/data/categories`),
+              {
+                name: name,
+                color: defaultColor,
+                products: [],
+              }
+            );
+            console.log("Category added successfully to Firestore.");
+            document.getElementById("newCategoryName").value = "";
+            document.getElementById("categoryMsg").innerText =
+              "✔ Thêm thành công!";
+            document.getElementById("categoryMsg").style.color = "#28a745";
+          } catch (e) {
+            console.error("Error adding document to Firestore: ", e);
+            document.getElementById(
+              "categoryMsg"
+            ).innerText = `Lỗi khi thêm danh mục: ${e.message}. Kiểm tra quy tắc bảo mật Firestore.`;
+            document.getElementById("categoryMsg").style.color = "#dc3545";
+          }
+        } else {
+          // Local mode fallback
+          console.warn("Running in local mode. Data will not persist.");
+          window.categories[name] = { products: [], color: defaultColor };
+          renderCategories();
+          updateCategorySelect();
+          document.getElementById("newCategoryName").value = "";
+          document.getElementById("categoryMsg").innerText =
+            "✔ Thêm thành công (chế độ cục bộ)!";
+          document.getElementById("categoryMsg").style.color = "#28a745";
+        }
+      };
+
+      window.updateCategorySelect = function () {
+        const select = document.getElementById("categorySelect");
+        select.innerHTML = '<option value="">Chọn danh mục</option>';
+        Object.keys(window.categories).forEach((cat) => {
+          const opt = document.createElement("option");
+          opt.value = cat;
+          opt.textContent = cat;
+          select.appendChild(opt);
+        });
+      };
+
+      window.addProduct = async function () {
+        const categoryName = document.getElementById("categorySelect").value;
+        const productName = document
+          .getElementById("newProductName")
+          .value.trim();
+
+        if (!categoryName) {
+          document.getElementById("productMsg").innerText =
+            "Vui lòng chọn danh mục!";
+          document.getElementById("productMsg").style.color = "#dc3545";
+          return;
+        }
+        if (!productName) {
+          document.getElementById("productMsg").innerText =
+            "Vui lòng nhập tên sản phẩm!";
+          document.getElementById("productMsg").style.color = "#dc3545";
+          return;
+        }
+
+        const categoryData = window.categories[categoryName];
+        if (!categoryData) {
+          document.getElementById("productMsg").innerText =
+            "Danh mục không tồn tại!";
+          document.getElementById("productMsg").style.color = "#dc3545";
+          return;
+        }
+
+        const productExists = categoryData.products.some(
+          (p) => p.name === productName
+        );
+        if (productExists) {
+          document.getElementById("productMsg").innerText =
+            "Sản phẩm đã tồn tại trong danh mục này!";
+          document.getElementById("productMsg").style.color = "#ffc107";
+          return;
+        }
+
+        const updatedProducts = [
+          ...categoryData.products,
+          { name: productName, quantity: 0 },
+        ];
+
+        if (db) {
+          try {
+            console.log(
+              `Adding product "${productName}" to category "${categoryName}" in Firestore.`
+            );
+            const categoryDocRef = doc(
+              db,
+              `/artifacts/${appId}/public/data/categories`,
+              categoryData.id
+            );
+            await updateDoc(categoryDocRef, {
+              products: updatedProducts,
+            });
+            console.log("Product added successfully to Firestore.");
+            document.getElementById("newProductName").value = "";
+            document.getElementById("productMsg").innerText =
+              "✔ Thêm thành công!";
+            document.getElementById("productMsg").style.color = "#28a745";
+          } catch (e) {
+            console.error("Error updating document in Firestore: ", e);
+            document.getElementById(
+              "productMsg"
+            ).innerText = `Lỗi khi thêm sản phẩm: ${e.message}. Kiểm tra quy tắc bảo mật Firestore.`;
+            document.getElementById("productMsg").style.color = "#dc3545";
+          }
+        } else {
+          // Local mode fallback
+          console.warn("Running in local mode. Data will not persist.");
+          categoryData.products.push({ name: productName, quantity: 0 });
+          renderCategories();
+          document.getElementById("newProductName").value = "";
+          document.getElementById("productMsg").innerText =
+            "✔ Thêm thành công (chế độ cục bộ)!";
+          document.getElementById("productMsg").style.color = "#28a745";
+        }
+      };
+
+      window.renderCategories = function () {
+        const container = document.getElementById("categoryContainer");
+        container.innerHTML = "";
+        Object.entries(window.categories).forEach(([catName, catData]) => {
+          const div = document.createElement("div");
+          div.className = "category";
+          div.style.backgroundColor = catData.color;
+
+          const h3 = document.createElement("h3");
+          h3.textContent = catName;
+          div.appendChild(h3);
+
+          const grid = document.createElement("div");
+          grid.className = "product-grid";
+
+          catData.products.forEach((p, index) => {
+            const productItemDiv = document.createElement("div");
+            productItemDiv.className = "product-item-display";
+
+            const label = document.createElement("span");
+            label.textContent = p.name;
+            productItemDiv.appendChild(label);
+
+            const input = document.createElement("input");
+            input.type = "number";
+            input.min = 0;
+            input.placeholder = "Số lượng";
+            input.value = p.quantity > 0 ? p.quantity : ""; // Display 0 as empty for better UX
+
+            input.oninput = async (e) => {
+              const newQuantity = parseInt(e.target.value || 0);
+              // Update local object immediately for responsiveness
+              catData.products[index].quantity = newQuantity;
+
+              if (db) {
+                // Debounce or send update to Firestore
+                // For simplicity, directly update Firestore here. For high-frequency updates, consider debouncing.
+                try {
+                  console.log(
+                    `Updating quantity for product "${p.name}" in category "${catName}" to ${newQuantity}.`
+                  );
+                  const categoryDocRef = doc(
+                    db,
+                    `/artifacts/${appId}/public/data/categories`,
+                    catData.id
+                  );
+                  // Create a copy of products array to ensure immutability for Firestore update
+                  const updatedProducts = catData.products.map((prod) => ({
+                    ...prod,
+                  }));
+                  await updateDoc(categoryDocRef, {
+                    products: updatedProducts,
+                  });
+                  console.log(
+                    "Product quantity updated successfully in Firestore."
+                  );
+                } catch (error) {
+                  console.error(
+                    "Error updating product quantity in Firestore:",
+                    error
+                  );
+                  // Optionally, revert UI change if update fails
+                  e.target.value = catData.products[index].quantity; // Revert to last known good quantity
+                }
+              }
+            };
+            productItemDiv.appendChild(input);
+            grid.appendChild(productItemDiv);
+          });
+
+          div.appendChild(grid);
+          container.appendChild(div);
+        });
+      };
+
+      window.showResult = function () {
+        const resultDiv = document.getElementById("resultContent");
+        let result = "";
+        const categoryNames = Object.keys(window.categories);
+
+        categoryNames.forEach((catName, catIndex) => {
+          const catData = window.categories[catName];
+          let categoryProducts = [];
+          catData.products.forEach((p) => {
+            if (p.quantity > 0) {
+              categoryProducts.push(`${p.name} ${p.quantity}`);
+            }
+          });
+
+          if (categoryProducts.length > 0) {
+            result += `DANH MỤC: ${catName}\n`;
+            result += categoryProducts.join("\n");
+
+            // Add separator if it's not the last category and there are products
+            if (catIndex < categoryNames.length - 1) {
+              result += "\n-----\n\n"; // Separator with extra newlines for spacing
+            } else if (categoryProducts.length > 0) {
+              result += "\n"; // Add a newline at the end of the last category if it has products
+            }
+          }
+        });
+
+        resultDiv.textContent = result || "Không có sản phẩm nào được chọn.";
+        showPopup("resultPopup");
+      };
+
+      window.copyResult = function () {
+        const text = document.getElementById("resultContent").textContent;
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          const successful = document.execCommand("copy");
+          const msg = successful ? "Đã copy vào clipboard!" : "Không thể copy.";
+          const resultPopup = document.getElementById("resultPopup");
+          const copyMsg = document.createElement("div");
+          copyMsg.textContent = msg;
+          copyMsg.style.cssText =
+            "color: #28a745; margin-top: 10px; text-align: center; font-weight: bold;";
+          if (!successful) copyMsg.style.color = "#dc3545";
+          resultPopup.appendChild(copyMsg);
+          setTimeout(() => resultPopup.removeChild(copyMsg), 2000);
+        } catch (err) {
+          const resultPopup = document.getElementById("resultPopup");
+          const copyMsg = document.createElement("div");
+          copyMsg.textContent = "Không thể copy. Vui lòng thử lại.";
+          copyMsg.style.cssText =
+            "color: #dc3545; margin-top: 10px; text-align: center; font-weight: bold;";
+          resultPopup.appendChild(copyMsg);
+          setTimeout(() => resultPopup.removeChild(copyMsg), 2000);
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      };
+
+      window.importCSV = function () {
+        const fileInput = document.getElementById("csvFileInput");
+        const file = fileInput.files[0];
+        const csvImportMsg = document.getElementById("csvImportMsg");
+
+        if (!file) {
+          csvImportMsg.innerText = "Vui lòng chọn một tệp CSV.";
+          csvImportMsg.style.color = "#dc3545";
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async function (e) {
+          const text = e.target.result;
+          const lines = text.split("\n").filter((line) => line.trim() !== ""); // Filter out empty lines
+          let successCount = 0;
+          let errorCount = 0;
+
+          const productsByCategories = {}; // { 'CategoryName': ['Product1', 'Product2'] }
+
+          for (let i = 0; i < lines.length; i++) {
+            // Process all lines
+            const line = lines[i].trim();
+            const parts = line.split(",");
+            if (parts.length >= 2) {
+              const categoryName = parts[0].trim();
+              const productName = parts[1].trim();
+              if (categoryName && productName) {
+                if (!productsByCategories[categoryName]) {
+                  productsByCategories[categoryName] = [];
+                }
+                productsByCategories[categoryName].push(productName);
+              } else {
+                errorCount++;
+                console.warn(`Skipping malformed CSV line: "${line}"`);
+              }
+            } else {
+              errorCount++;
+              console.warn(`Skipping malformed CSV line: "${line}"`);
+            }
+          }
+
+          const defaultColor = "#f0f4ff";
+
+          for (const categoryName in productsByCategories) {
+            const newProductsForCategory = productsByCategories[categoryName];
+
+            let categoryDocId = null;
+            let currentProductsInFirestore = [];
+            let categoryExistsInFirestore = false;
+
+            // Try to get existing category data from Firestore
+            if (db && window.categories[categoryName]) {
+              categoryDocId = window.categories[categoryName].id;
+              try {
+                const docRef = doc(
+                  db,
+                  `/artifacts/${appId}/public/data/categories`,
+                  categoryDocId
+                );
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                  currentProductsInFirestore = docSnap.data().products || [];
+                  categoryExistsInFirestore = true;
+                  console.log(
+                    `[importCSV] Fetched latest products for "${categoryName}" from Firestore for batch update:`,
+                    JSON.parse(JSON.stringify(currentProductsInFirestore))
+                  );
+                } else {
+                  console.warn(
+                    `[importCSV] Category document "${categoryName}" not found in Firestore despite being in local cache. Will create new.`
+                  );
+                  categoryDocId = null; // Force creation
+                }
+              } catch (e) {
+                console.error(
+                  `[importCSV] Error fetching category "${categoryName}" for batch update:`,
+                  e
+                );
+                categoryDocId = null; // Treat as not found
+              }
+            } else if (!db && window.categories[categoryName]) {
+              // Local mode fallback
+              currentProductsInFirestore =
+                window.categories[categoryName].products;
+              categoryExistsInFirestore = true;
+              console.warn(
+                `[importCSV] Running in local mode. Using local cache for products of "${categoryName}" for batch update.`
+              );
+            }
+
+            // Merge new products, avoiding duplicates
+            const mergedProducts = [...currentProductsInFirestore];
+            let productsAddedToThisCategory = 0;
+
+            newProductsForCategory.forEach((newProductName) => {
+              const productExists = mergedProducts.some(
+                (p) => p.name === newProductName
+              );
+              if (!productExists) {
+                mergedProducts.push({ name: newProductName, quantity: 0 });
+                productsAddedToThisCategory++;
+              } else {
+                console.log(
+                  `[importCSV] Product "${newProductName}" already exists in category "${categoryName}". Skipping.`
+                );
+              }
+            });
+
+            if (productsAddedToThisCategory > 0) {
+              // Only update if new products were actually added
+              if (db) {
+                try {
+                  if (categoryExistsInFirestore && categoryDocId) {
+                    console.log(
+                      `[importCSV] Updating category "${categoryName}" (Doc ID: ${categoryDocId}) with ${productsAddedToThisCategory} new products.`
+                    );
+                    const categoryDocRef = doc(
+                      db,
+                      `/artifacts/${appId}/public/data/categories`,
+                      categoryDocId
+                    );
+                    await updateDoc(categoryDocRef, {
+                      products: mergedProducts,
+                    });
+                  } else {
+                    console.log(
+                      `[importCSV] Adding new category "${categoryName}" with ${productsAddedToThisCategory} products.`
+                    );
+                    await addDoc(
+                      collection(
+                        db,
+                        `/artifacts/${appId}/public/data/categories`
+                      ),
+                      {
+                        name: categoryName,
+                        color: defaultColor,
+                        products: mergedProducts,
+                      }
+                    );
+                  }
+                  successCount += productsAddedToThisCategory;
+                } catch (e) {
+                  errorCount += productsAddedToThisCategory;
+                  console.error(
+                    `[importCSV] Error during batch update/add for category "${categoryName}":`,
+                    e
+                  );
+                }
+              } else {
+                // Local mode fallback
+                if (!window.categories[categoryName]) {
+                  window.categories[categoryName] = {
+                    products: [],
+                    color: defaultColor,
+                  };
+                }
+                window.categories[categoryName].products = mergedProducts;
+                renderCategories(); // Re-render in local mode
+                successCount += productsAddedToThisCategory;
+                console.warn(
+                  `[importCSV] Category "${categoryName}" updated/added locally with ${productsAddedToThisCategory} products.`
+                );
+              }
+            } else {
+              console.log(
+                `[importCSV] No new unique products to add for category "${categoryName}".`
+              );
+            }
+          }
+
+          csvImportMsg.innerText = `Đã nhập thành công ${successCount} sản phẩm. Lỗi: ${errorCount}.`;
+          csvImportMsg.style.color =
+            successCount > 0 ? "#28a745" : errorCount > 0 ? "#ffc107" : "#666";
+          fileInput.value = ""; // Clear file input
+        };
+
+        reader.onerror = function () {
+          csvImportMsg.innerText = "Lỗi khi đọc tệp.";
+          csvImportMsg.style.color = "#dc3545";
+        };
+
+        reader.readAsText(file);
+      };
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #fef6e4;
+      /* Basic body styling */
+      html,
+      body {
+        min-height: 100vh; /* Ensure the document and body take at least the full viewport height */
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden; /* Prevent horizontal scrolling */
+      }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background-color: #fefefe;
+        color: #333;
+        line-height: 1.6;
+        /* No explicit overflow-y: auto here, let browser handle it */
+      }
+
+      /* Header styling */
+      header {
+        background-color: #d0ebff; /* Pastel blue */
+        padding: 20px;
+        position: relative;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center; /* Center header content */
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        color: #4a4a4a;
+        text-align: center;
+        /* Padding adjusted for smaller screens in media query */
+      }
+
+      #userIdDisplay {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 0.8em;
+        color: #666;
+        background-color: rgba(255, 255, 255, 0.7);
+        padding: 5px 10px;
+        border-radius: 8px;
+        z-index: 10;
+      }
+
+      .add-buttons {
+        position: absolute;
+        top: 15px; /* Adjust top for better alignment */
+        right: 15px; /* Adjust right for better alignment */
+        display: flex;
+        flex-direction: column; /* Stack buttons vertically on small screens by default */
+        gap: 8px; /* Reduce gap */
+        align-items: flex-end; /* Align buttons to the right */
+      }
+
+      button {
+        background-color: #bde0fe; /* Lighter pastel blue */
+        border: none;
+        border-radius: 12px;
+        padding: 8px 15px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        font-weight: bold;
+        color: #333;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        white-space: nowrap; /* Prevent text wrapping on buttons */
+      }
+
+      button:hover {
+        background-color: #a2d2ff; /* Slightly darker blue on hover */
+        transform: translateY(-2px);
+      }
+
+      .container {
+        padding: 15px; /* Slightly reduced padding for mobile */
+        max-width: 960px;
+        margin: 20px auto;
+      }
+
+      .category {
+        background-color: #f0f4ff; /* Default very light pastel blue, overridden by JS */
+        border-radius: 15px;
+        margin-bottom: 25px; /* Slightly increased margin for better separation */
+        padding: 15px 20px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      .category h3 {
+        margin-top: 5px;
+        margin-bottom: 15px;
+        color: #6a6a6a;
+        border-bottom: 1px dashed #d0ebff;
+        padding-bottom: 10px;
+        font-size: 20px; /* Adjusted font size */
+      }
+
+      /* Popup styling */
+      .popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #ffffff;
+        border: 2px solid #bde0fe;
+        border-radius: 18px;
+        padding: 20px; /* Slightly reduced padding */
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+        display: none;
+        z-index: 1000;
+        min-width: 280px; /* Reduced min-width for very small screens */
+        max-width: 95%; /* Increased max-width percentage */
+        box-sizing: border-box;
+      }
+
+      .popup h3 {
+        margin-top: 0;
+        text-align: center;
+        color: #6a6a6a;
+        font-size: 20px; /* Adjusted font size */
+        margin-bottom: 15px; /* Slightly reduced margin */
+      }
+
+      .popup input,
+      .popup select {
+        width: calc(100% - 20px); /* Account for padding */
+        margin-bottom: 12px; /* Slightly reduced margin */
+        padding: 8px; /* Slightly reduced padding */
+        border-radius: 10px;
+        border: 1px solid #d0ebff;
+        box-sizing: border-box;
+        font-size: 15px; /* Adjusted font size */
+      }
+
+      .popup button {
+        width: 100%;
+        padding: 10px; /* Slightly reduced padding */
+        font-size: 16px; /* Adjusted font size */
+        background-color: #bde0fe;
+        color: #333;
+        border-radius: 12px;
+      }
+
+      .popup .close {
+        position: absolute;
+        top: 8px; /* Adjusted top for better alignment */
+        right: 12px; /* Adjusted right for better alignment */
+        font-size: 24px; /* Adjusted font size */
+        cursor: pointer;
+        color: #aaa;
+        transition: color 0.2s;
+      }
+
+      .popup .close:hover {
+        color: #666;
+      }
+
+      .product-grid {
+        display: flex; /* Use flexbox for horizontal layout */
+        flex-wrap: wrap; /* Allow items to wrap */
+        justify-content: flex-start; /* Align items to the start */
+        gap: 10px; /* Reduced gap */
+      }
+
+      .product-item-display {
+        background-color: #e0f7fa; /* Light cyan pastel */
+        border-radius: 10px;
+        padding: 8px; /* Reduced padding */
+        text-align: left; /* Align text to left */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        font-size: 14px; /* Adjusted font size */
+        color: #4a4a4a;
+        display: flex; /* Use flexbox for name and input */
+        align-items: center; /* Vertically align items */
+        justify-content: space-between; /* Space between name and input */
+        flex-grow: 1; /* Allow items to grow */
+        min-width: 180px; /* Minimum width for product item */
+        max-width: calc(50% - 5px); /* Two columns on larger screens */
+        box-sizing: border-box; /* Include padding in width */
+      }
+
+      .product-item-display span {
+        flex-grow: 1; /* Allow product name to take available space */
+        margin-right: 10px; /* Space between name and input */
+        white-space: nowrap; /* Prevent name from wrapping */
+        overflow: hidden; /* Hide overflow if name is too long */
+        text-overflow: ellipsis; /* Add ellipsis for long names */
+      }
+
+      .product-item-display input[type="number"] {
+        width: 70px; /* Reduced width */
+        margin-top: 0; /* Remove top margin */
+        padding: 4px; /* Reduced padding */
+        border-radius: 5px;
+        border: 1px solid #a2d2ff;
+        text-align: center;
+        -moz-appearance: textfield; /* Hide arrows for Firefox */
+        flex-shrink: 0; /* Prevent input from shrinking */
+      }
+
+      .product-item-display input[type="number"]::-webkit-outer-spin-button,
+      .product-item-display input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none; /* Hide arrows for Chrome, Safari, Edge */
+        margin: 0;
+      }
+
+      #resultPopup {
+        white-space: pre-line;
+        font-family: "Courier New", monospace;
+        background-color: #f8f8f8;
+        padding: 12px; /* Reduced padding */
+        border-radius: 10px;
+        border: 1px solid #eee;
+        max-height: 250px; /* Reduced max-height */
+        overflow-y: auto;
+        font-size: 14px; /* Adjusted font size */
+      }
+
+      .copy-btn {
+        background-color: #ffd6e0; /* Pastel pink */
+        margin-top: 15px; /* Reduced margin */
+        color: #333;
+      }
+
+      .copy-btn:hover {
+        background-color: #ffafcc;
+      }
+
+      .message {
+        margin-top: 10px;
+        text-align: center;
+        font-weight: bold;
+        color: #28a745; /* Green for success */
+      }
+
+      #loadingMessage {
+        text-align: center;
+        margin-top: 50px;
+        font-size: 1.2em;
+        color: #666;
+        display: none; /* Hidden by default, shown by JS */
+      }
+
+      /* Media queries for very small screens (e.g., less than 480px width) */
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 24px;
+          padding-right: 0; /* Remove padding when buttons stack */
         }
-        
-        .cute-btn {
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+        .add-buttons {
+          position: static; /* Remove absolute positioning */
+          flex-direction: row; /* Arrange buttons in a row if space allows */
+          justify-content: center; /* Center buttons */
+          margin-top: 15px; /* Add some margin below header */
+          gap: 5px; /* Smaller gap */
+          width: 100%; /* Take full width */
+          box-sizing: border-box;
+          padding: 0 10px; /* Add horizontal padding */
         }
-        
-        .cute-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+        .add-buttons button {
+          flex-grow: 1; /* Allow buttons to grow and fill space */
+          padding: 10px 8px; /* Adjust padding */
+          font-size: 14px; /* Smaller font size for buttons */
         }
-        
-        .lesson-card {
-            transition: all 0.3s ease;
-            background-color: #f3d2c1;
+
+        .container {
+          padding: 10px; /* Even less padding on very small screens */
         }
-        
-        .lesson-card:hover {
-            transform: scale(1.02);
-            background-color: #fef6e4;
+
+        .category {
+          padding: 10px; /* Reduced category padding */
         }
-        
-        .speech-bubble {
-            position: relative;
-            background: #8bd3dd;
-            border-radius: 1rem;
+
+        .category h3 {
+          font-size: 18px;
         }
-        
-        .speech-bubble:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 20px;
-            border-width: 10px 10px 0;
-            border-style: solid;
-            border-color: #8bd3dd transparent;
+
+        .product-grid {
+          flex-direction: column; /* Stack product items vertically on very small screens */
+          gap: 8px;
         }
-        
-        .progress-bar {
-            height: 10px;
-            border-radius: 5px;
-            background-color: #e2e8f0;
+
+        .product-item-display {
+          font-size: 13px;
+          padding: 6px;
+          max-width: 100%; /* Take full width on very small screens */
         }
-        
-        .progress-fill {
-            height: 100%;
-            border-radius: 5px;
-            background-color: #f582ae;
-            transition: width 0.5s ease;
+
+        .product-item-display input[type="number"] {
+          width: 60px;
+          font-size: 13px;
         }
+
+        .popup {
+          padding: 15px;
+          min-width: unset; /* Remove min-width constraint */
+          width: 95%; /* Ensure it takes most of the width */
+        }
+
+        .popup h3 {
+          font-size: 18px;
+        }
+
+        .popup input,
+        .popup select {
+          font-size: 14px;
+          padding: 8px;
+        }
+
+        .popup button {
+          font-size: 16px;
+          padding: 10px;
+        }
+
+        .close-button {
+          font-size: 20px;
+        }
+      }
     </style>
-</head>
-<body class="min-h-screen">
-    <!-- Header -->
-    <header class="bg-[#f582ae] text-white shadow-md">
-        <div class="container mx-auto px-4 py-6">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-book-open text-3xl"></i>
-                    <h1 class="text-2xl font-bold">Học Tiếng Anh Vui Vẻ</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="hidden md:flex items-center space-x-2">
-                        <i class="fas fa-user-circle text-2xl"></i>
-                        <span>Xin chào, Học viên!</span>
-                    </div>
-                    <button class="bg-white text-[#f582ae] px-4 py-2 rounded-full cute-btn font-medium">
-                        <i class="fas fa-sign-in-alt mr-2"></i>Đăng nhập
-                    </button>
-                </div>
-            </div>
-        </div>
+  </head>
+  <body>
+    <header>
+      <div id="userIdDisplay"></div>
+      <h1>Design by MinhChien</h1>
+      <div class="add-buttons">
+        <button onclick="showPopup('categoryPopup')">+ Thêm danh mục</button>
+        <button onclick="showPopup('productPopup')">+ Thêm sản phẩm</button>
+        <button onclick="showPopup('csvImportPopup')">Nhập CSV</button>
+        <!-- New CSV import button -->
+      </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="bg-[#fef6e4] py-12">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row items-center">
-                <div class="md:w-1/2 mb-8 md:mb-0">
-                    <h2 class="text-4xl font-bold text-[#001858] mb-4">Học tiếng Anh thật dễ dàng!</h2>
-                    <p class="text-lg text-[#172c66] mb-6">Khám phá thế giới tiếng Anh với các bài học vui nhộn, dễ hiểu dành cho người mới bắt đầu.</p>
-                    <div class="flex space-x-4">
-                        <button class="bg-[#f582ae] text-white px-6 py-3 rounded-full cute-btn font-medium">
-                            <i class="fas fa-play mr-2"></i>Bắt đầu học
-                        </button>
-                        <button class="border-2 border-[#f582ae] text-[#f582ae] px-6 py-3 rounded-full cute-btn font-medium">
-                            <i class="fas fa-info-circle mr-2"></i>Tìm hiểu thêm
-                        </button>
-                    </div>
-                </div>
-                <div class="md:w-1/2 flex justify-center">
-                    <div class="relative w-64 h-64 md:w-80 md:h-80">
-                        <div class="absolute inset-0 bg-[#8bd3dd] rounded-full opacity-20"></div>
-                        <div class="absolute inset-4 bg-[#f582ae] rounded-full opacity-20"></div>
-                        <img src="https://img.icons8.com/color/480/000000/english.png" alt="Learn English" class="relative w-full h-full object-contain">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div id="loadingMessage"></div>
+    <div class="container" id="categoryContainer">
+      <!-- Danh mục và sản phẩm sẽ được thêm vào đây -->
+    </div>
 
-    <!-- Progress Section -->
-    <section class="bg-white py-8 shadow-inner">
-        <div class="container mx-auto px-4">
-            <div class="bg-[#f3d2c1] rounded-2xl p-6">
-                <h3 class="text-xl font-semibold text-[#001858] mb-4">Tiến trình học tập của bạn</h3>
-                <div class="mb-2 flex justify-between">
-                    <span class="text-[#172c66]">20% hoàn thành</span>
-                    <span class="text-[#172c66]">Bài 4/20</span>
-                </div>
-                <div class="progress-bar mb-6">
-                    <div class="progress-fill" style="width: 20%;"></div>
-                </div>
-                <button class="bg-[#001858] text-white px-6 py-2 rounded-full cute-btn">
-                    <i class="fas fa-arrow-right mr-2"></i>Tiếp tục học
-                </button>
-            </div>
-        </div>
-    </section>
+    <!-- Popup Thêm danh mục -->
+    <div class="popup" id="categoryPopup">
+      <span class="close" onclick="hidePopup('categoryPopup')">&times;</span>
+      <h3>Thêm danh mục</h3>
+      <input type="text" id="newCategoryName" placeholder="Tên danh mục" />
+      <!-- Removed color selection as per user request -->
+      <button onclick="addCategory()">Thêm</button>
+      <div id="categoryMsg" class="message"></div>
+    </div>
 
-    <!-- Lessons Section -->
-    <section class="py-12 bg-[#fef6e4]">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-[#001858] mb-8 text-center">Các bài học</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Lesson 1 -->
-                <div class="lesson-card rounded-xl p-6 shadow-md cursor-pointer">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="bg-[#8bd3dd] text-[#001858] rounded-full w-12 h-12 flex items-center justify-center">
-                            <i class="fas fa-award text-xl"></i>
-                        </div>
-                        <span class="bg-[#f582ae] text-white text-sm px-3 py-1 rounded-full">Mới</span>
-                    </div>
-                    <h3 class="text-xl font-semibold text-[#001858] mb-2">Chào hỏi cơ bản</h3>
-                    <p class="text-[#172c66] mb-4">Học cách chào hỏi và giới thiệu bản thân bằng tiếng Anh</p>
-                    <div class="flex justify-between items-center">
-                        <div class="flex space-x-1 text-yellow-400">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                            <i class="far fa-star"></i>
-                        </div>
-                        <button class="text-[#f582ae] font-medium">
-                            Bắt đầu <i class="fas fa-arrow-right ml-1"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Lesson 2 -->
-                <div class="lesson-card rounded-xl p-6 shadow-md cursor-pointer">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="bg-[#f582ae] text-white rounded-full w-12 h-12 flex items-center justify-center">
-                            <i class="fas fa-utensils text-xl"></i>
-                        </div>
-                        <span class="bg-[#8bd3dd] text-[#001858] text-sm px-3 py-1 rounded-full">Phổ biến</span>
-                    </div>
-                    <h3 class="text-xl font-semibold text-[#001858] mb-2">Đồ ăn & Nhà hàng</h3>
-                    <p class="text-[#172c66] mb-4">Từ vựng và mẫu câu khi gọi món trong nhà hàng</p>
-                    <div class="flex justify-between items-center">
-                        <div class="flex space-x-1 text-yellow-400">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="far fa-star"></i>
-                        </div>
-                        <button class="text-[#f582ae] font-medium">
-                            Bắt đầu <i class="fas fa-arrow-right ml-1"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Lesson 3 -->
-                <div class="lesson-card rounded-xl p-6 shadow-md cursor-pointer">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="bg-[#f3d2c1] text-[#001858] rounded-full w-12 h-12 flex items-center justify-center">
-                            <i class="fas fa-shopping-bag text-xl"></i>
-                        </div>
-                        <span class="bg-[#f3d2c1] text-[#001858] text-sm px-3 py-1 rounded-full">Thực hành</span>
-                    </div>
-                    <h3 class="text-xl font-semibold text-[#001858] mb-2">Mua sắm</h3>
-                    <p class="text-[#172c66] mb-4">Hỏi giá, mặc cả và thanh toán khi đi mua sắm</p>
-                    <div class="flex justify-between items-center">
-                        <div class="flex space-x-1 text-yellow-400">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                        <button class="text-[#f582ae] font-medium">
-                            Bắt đầu <i class="fas fa-arrow-right ml-1"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="text-center mt-10">
+    <!-- Popup Thêm sản phẩm -->
+    <div class="popup" id="productPopup">
+      <span class="close" onclick="hidePopup('productPopup')">&times;</span>
+      <h3>Thêm sản phẩm</h3>
+      <select id="categorySelect">
+        <option value="">Chọn danh mục</option>
+      </select>
+      <input type="text" id="newProductName" placeholder="Tên sản phẩm" />
+      <button onclick="addProduct()">Thêm</button>
+      <div id="productMsg" class="message"></div>
+    </div>
 
-            </html>
+    <!-- Popup Nhập từ CSV -->
+    <div class="popup" id="csvImportPopup">
+      <span class="close" onclick="hidePopup('csvImportPopup')">&times;</span>
+      <h3>Nhập từ CSV</h3>
+      <input type="file" id="csvFileInput" accept=".csv" />
+      <button onclick="importCSV()">Nhập CSV</button>
+      <div id="csvImportMsg" class="message"></div>
+    </div>
+
+    <!-- Nút kết quả -->
+    <div style="text-align: center; margin-bottom: 40px">
+      <button onclick="showResult()" style="margin-top: 20px">Kết quả</button>
+    </div>
+
+    <!-- Popup kết quả -->
+    <div class="popup" id="resultPopup">
+      <span class="close" onclick="hidePopup('resultPopup')">&times;</span>
+      <h3>Kết quả</h3>
+      <div id="resultContent"></div>
+      <button class="copy-btn" onclick="copyResult()">Copy</button>
+    </div>
+  </body>
+</html>
