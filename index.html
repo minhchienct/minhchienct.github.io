@@ -509,27 +509,31 @@
             const input = document.createElement("input");
             input.type = "number";
             input.min = 0;
+            // Allow decimal numbers by setting the step attribute
+            input.step = "any"; 
             input.placeholder = "Số lượng";
-            input.value = p.quantity > 0 ? p.quantity : ""; // Display 0 as empty for better UX
+            // Display 0 as empty for better UX, but ensure it's a number for calculations
+            input.value = p.quantity > 0 ? p.quantity : ""; 
 
             input.oninput = async (e) => {
-              const newQuantity = parseInt(e.target.value || 0);
+              // Use parseFloat to correctly handle decimal numbers
+              const newQuantity = parseFloat(e.target.value || 0); 
+              const oldQuantity = catData.products[index].quantity; // Capture old quantity
+              
               // Update local object immediately for responsiveness
               catData.products[index].quantity = newQuantity;
+              console.log(`[UI Update] Product "${p.name}" quantity locally changed from ${oldQuantity} to ${newQuantity}. Current local state for category "${catName}":`, JSON.parse(JSON.stringify(catData.products)));
 
               if (db) {
-                // Debounce or send update to Firestore
-                // For simplicity, directly update Firestore here. For high-frequency updates, consider debouncing.
                 try {
                   console.log(
-                    `Updating quantity for product "${p.name}" in category "${catName}" to ${newQuantity}.`
+                    `[Firestore] Attempting to update quantity for product "${p.name}" in category "${catName}" to ${newQuantity}. Category Doc ID: ${catData.id}`
                   );
                   const categoryDocRef = doc(
                     db,
                     `/artifacts/${appId}/public/data/categories`,
                     catData.id
                   );
-                  // Create a copy of products array to ensure immutability for Firestore update
                   const updatedProducts = catData.products.map((prod) => ({
                     ...prod,
                   }));
@@ -537,16 +541,20 @@
                     products: updatedProducts,
                   });
                   console.log(
-                    "Product quantity updated successfully in Firestore."
+                    `[Firestore Success] Product quantity updated successfully in Firestore for "${p.name}".`
                   );
                 } catch (error) {
                   console.error(
-                    "Error updating product quantity in Firestore:",
+                    `[Firestore Error] Error updating product quantity for "${p.name}" in Firestore:`,
                     error
                   );
-                  // Optionally, revert UI change if update fails
-                  e.target.value = catData.products[index].quantity; // Revert to last known good quantity
+                  // Revert UI change if update fails
+                  e.target.value = oldQuantity > 0 ? oldQuantity : ""; // Revert to last known good quantity (display empty for 0)
+                  catData.products[index].quantity = oldQuantity; // Revert local state too
+                  console.log(`[UI Revert] Reverted UI and local state for "${p.name}" to ${oldQuantity} due to Firestore error.`);
                 }
+              } else {
+                console.warn(`[Local Mode] Quantity for "${p.name}" updated locally to ${newQuantity}. No Firestore update in local mode.`);
               }
             };
             productItemDiv.appendChild(input);
@@ -559,6 +567,7 @@
       };
 
       window.showResult = function () {
+        console.log("[showResult] Function called. Current window.categories state:", JSON.parse(JSON.stringify(window.categories)));
         const resultDiv = document.getElementById("resultContent");
         let result = "";
         const categoryNames = Object.keys(window.categories);
