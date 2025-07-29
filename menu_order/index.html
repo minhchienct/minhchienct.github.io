@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thực đơn nhà hàng</title>
+    <!-- Font Awesome CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <!-- Link to your local CSS file, assuming it's in ./assets/css/style.css -->
+    <link rel="stylesheet" href="./assets/css/style.css" />
+  </head>
+  <body>
+    <div id="container">
+      <header>
+        <div class="header-inner">
+          <div class="logo">
+            <a href="">
+              <!-- Placeholder image for logo.png -->
+              <img src="./assets/img/logo.png" alt="logo" />
+            </a>
+          </div>
+          <button id="menu">
+            <i class="fa-solid fa-bars" id="menu_icon"></i>
+          </button>
+          <div id="menu_list" style="display: none">
+            <a href="#">Home</a>
+            <a href="#">Menu</a>
+            <a href="#">About</a>
+            <a href="#">Giỏ Hàng</a>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div class="noidung">
+          <div class="tieude_menu">
+            <div class="tieude"><h1>MENU NGOSG</h1></div>
+            <div class="theloai">
+              <a href="">SEAFOOD</a>
+              <a href="">APPETIZER</a>
+              <a href="">SOUPS</a>
+              <a href="">DRINKS</a>
+            </div>
+          </div>
+          <div class="menu_monan">
+            <div>
+              <!-- Scroll to top button -->
+              <a href="#container"
+                ><i class="fa-solid fa-arrow-up" id="goTop"></i
+              ></a>
+            </div>
+            <div class="all_menu">
+              <!-- First menu item block -->
+              <div class="boc_menu">
+                <div class="menu_mon">
+                  <div class="menu_img">
+                    <!-- Placeholder image for menu item -->
+                    <img
+                      src="./assets/img/IuEbUslOQ8OcFaFcfGQMHwXM0MKWWB.webp"
+                      alt="Tôm Hùm Bơ Tỏi"
+                    />
+                    <div class="overlay_btn">
+                      <a href="#"><i class="fa-solid fa-eye"></i></a>
+                      <a href="#"><i class="fa-solid fa-cart-plus"></i></a>
+                    </div>
+                  </div>
+                  <div class="menu_text">
+                    <p>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                    </p>
+                    <a href="" class="category">SeaFood</a>
+                    <a href="" class="title">Tôm Hùm Bơ Tỏi</a>
+                    <p class="descrption">
+                      Tôm hùm tươi nướng vàng, thấm đẫm bơ tỏi thơm lừng, thịt
+                      ngọt mềm, béo ngậy, hấp dẫn khó cưỡng.
+                    </p>
+                    <div class="dat_hang">
+                      <a href="#" onclick="Popup_mon(); return false;"
+                        >Đặt món</a
+                      >
+                      <h3>60k</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Second menu item block (example, duplicated for structure) -->
+              <div class="boc_menu">
+                <div class="menu_mon">
+                  <div class="menu_img">
+                    <!-- Placeholder image for menu item -->
+                    <img
+                      src="./assets/img/Pf85UH4EytBK8MmbkDouqJ1lJNmi0P.webp"
+                      alt="Tôm Hùm Bơ Tỏi"
+                    />
+                    <div class="overlay_btn">
+                      <a href="#"><i class="fa-solid fa-eye"></i></a>
+                      <a href="#"><i class="fa-solid fa-cart-plus"></i></a>
+                    </div>
+                  </div>
+                  <div class="menu_text">
+                    <p>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                    </p>
+                    <a href="" class="category">SeaFood</a>
+                    <a href="" class="title">Tôm Hùm Bơ Tỏi</a>
+                    <p class="descrption">
+                      Tôm hùm tươi nướng vàng, thấm đẫm bơ tỏi thơm lừng, thịt
+                      ngọt mềm, béo ngậy, hấp dẫn khó cưỡng.
+                    </p>
+                    <div class="dat_hang">
+                      <a href="#" onclick="Popup_mon(); return false;"
+                        >Đặt món</a
+                      >
+                      <h3>60k</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Third menu item block (example, duplicated for structure) -->
+              <div class="boc_menu">
+                <div class="menu_mon">
+                  <div class="menu_img">
+                    <!-- Placeholder image for menu item -->
+                    <img
+                      src="./assets/img/mu8CuZXV42yxiNgCvMorBfFmFx1xeM.webp"
+                      alt="Tôm Hùm Bơ Tỏi"
+                    />
+                    <div class="overlay_btn">
+                      <a href="#"><i class="fa-solid fa-eye"></i></a>
+                      <a href="#"><i class="fa-solid fa-cart-plus"></i></a>
+                    </div>
+                  </div>
+                  <div class="menu_text">
+                    <p>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                    </p>
+                    <a href="" class="category">SeaFood</a>
+                    <a href="" class="title">Tôm Hùm Bơ Tỏi</a>
+                    <p class="descrption">
+                      Tôm hùm tươi nướng vàng, thấm đẫm bơ tỏi thơm lừng, thịt
+                      ngọt mềm, béo ngậy, hấp dẫn khó cưỡng.
+                    </p>
+                    <div class="dat_hang">
+                      <a href="#" onclick="Popup_mon(); return false;"
+                        >Đặt món</a
+                      >
+                      <h3>60k</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fourth menu item block (example, duplicated for structure) -->
+              <div class="boc_menu">
+                <div class="menu_mon">
+                  <div class="menu_img">
+                    <!-- Placeholder image for menu item -->
+                    <img
+                      src="./assets/img/mu8CuZXV42yxiNgCvMorBfFmFx1xeM.webp"
+                      alt="Tôm Hùm Bơ Tỏi"
+                    />
+                    <div class="overlay_btn">
+                      <a href="#"><i class="fa-solid fa-eye"></i></a>
+                      <a href="#"><i class="fa-solid fa-cart-plus"></i></a>
+                    </div>
+                  </div>
+                  <div class="menu_text">
+                    <p>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                      <i class="fa-solid fa-star"></i>
+                    </p>
+                    <a href="" class="category">SeaFood</a>
+                    <a href="" class="title">Tôm Hùm Bơ Tỏi</a>
+                    <p class="descrption">
+                      Tôm hùm tươi nướng vàng, thấm đẫm bơ tỏi thơm lừng, thịt
+                      ngọt mềm, béo ngậy, hấp dẫn khó cưỡng.
+                    </p>
+                    <div class="dat_hang">
+                      <a href="#" onclick="Popup_mon(); return false;"
+                        >Đặt món</a
+                      >
+                      <h3>60k</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="viewall-menu">
+              <div class="viewall_btn">
+                <a href="#" class="common_btn">view all menu</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="banner"></div>
+      </main>
+      <footer></footer>
+    </div>
+
+    <!-- The single popup/modal element, now with a unique ID and correct structure -->
+    <div id="popup_overlay" style="display: none"></div>
+
+    <div class="container_mon" style="display: none" id="them_mon_an">
+      <button onclick="closePopup()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="img_mon">
+        <!-- Placeholder image for popup item -->
+        <img
+          src="./assets/img/Pf85UH4EytBK8MmbkDouqJ1lJNmi0P.webp"
+          alt="Combo Khai vị Ngõ"
+        />
+      </div>
+      <div class="noidung_mon">
+        <h3>Combo Khai vị Ngõ</h3>
+        <h5>Select Option</h5>
+        <div class="option">
+          <label class="tick_chon">
+            <input type="checkbox" />
+            <span class="gan">Nhiều bún</span>
+            <span class="xa">+ 50k</span>
+          </label>
+
+          <label class="tick_chon">
+            <input type="checkbox" />
+            <span class="gan">Nhiều rau</span>
+            <span class="xa">+ 30k</span>
+          </label>
+        </div>
+        <div class="them_bot">
+          <button onclick="giam()">-</button>
+          <input type="number" id="soluong" value="1" min="0" />
+          <button onclick="tang()">+</button>
+          <p>$ 60.00</p>
+        </div>
+        <div onclick="addToCard()" id="add_to_card" class="addtocard">
+          <span class="icon_giohang"
+            ><i class="fa-solid fa-cart-shopping"></i
+          ></span>
+          <a href="#" class="add_card">ADD TO CARD</a>
+        </div>
+      </div>
+      <div class="btn_addmon"></div>
+    </div>
+
+    <!-- Link to your local JavaScript file, assuming it's in ./assets/javasript/main.js -->
+    <script src="./assets/javasript/main.js"></script>
+    <div id="thongbao_themmon" style="display: none">
+      ✅ Đã thêm món thành công!
+    </div>
+  </body>
+</html>
