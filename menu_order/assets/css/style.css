@@ -1,0 +1,1064 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+a {
+  text-decoration: none;
+}
+#container {
+  max-width: 1600px;
+  width: 100%;
+  background-color: white;
+  height: auto;
+}
+header {
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(8, 5, 33, 0.1);
+  /* display: flex;
+    justify-content: space-between;
+    align-items: center; */
+  position: fixed;
+  height: 80px;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: aliceblue;
+}
+.header-inner {
+  max-width: 90%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+.logo img {
+  width: 85px;
+  max-width: 100%;
+  height: auto;
+  transition: 0.3;
+}
+.logo img:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+.menu a {
+  font-size: 25px;
+  display: block;
+  text-decoration: none;
+  padding: 8px 12px;
+}
+.menu {
+  border: 0.5px solid black;
+  background-color: #f2a22a;
+  border-radius: 8px;
+}
+main {
+  padding-top: 80px;
+  display: flex;
+  justify-content: center;
+}
+.noidung {
+  max-width: 100vw;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: auto;
+}
+.tieude_menu {
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.tieude_menu .tieude {
+  display: flex;
+  align-items: center;
+  height: 100px;
+  width: 100%;
+  align-content: center;
+  justify-content: center;
+  text-align: center;
+}
+.tieude_menu .tieude h1 {
+  font-weight: bold;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+.tieude_menu .theloai {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  border-top: 1px solid rgba(8, 5, 33, 0.1);
+  border-bottom: 1px solid rgba(8, 5, 33, 0.1);
+}
+
+.tieude_menu .theloai a {
+  position: relative;
+  text-decoration: none;
+  padding: 0 15px;
+  color: black;
+  font-size: 17px;
+  font-weight: 700;
+}
+.tieude_menu .theloai a:hover {
+  color: red;
+}
+.tieude_menu .theloai a::after {
+  position: absolute;
+  content: "•";
+  color: red;
+  right: -4px;
+  font-size: 20px;
+}
+.tieude_menu .theloai a:last-child::after {
+  content: "";
+}
+
+.menu_monan {
+  max-width: 80vw;
+  width: 100%;
+  padding-top: 20px;
+}
+.all_menu {
+  display: flex;
+  gap: 20px;
+}
+.menu_monan .menu_img img {
+  width: 100%;
+}
+
+/* --------------------- màn hình đt */
+@media (max-width: 768px) {
+  #container {
+    max-width: 100vw;
+    width: 100%;
+    background-color: white;
+    height: 100vh;
+  }
+  header {
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(8, 5, 33, 0.1);
+    /* display: flex;
+    justify-content: space-between;
+    align-items: center; */
+    position: fixed;
+    height: 80px;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: aliceblue;
+  }
+  .header-inner {
+    max-width: 90%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+  }
+  .logo img {
+    width: 85px;
+    max-width: 100%;
+    height: auto;
+    transition: 0.3;
+  }
+  .logo img:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+
+  #menu {
+    border: 0.5px solid black;
+    background-color: #f2a22a;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  #menu i {
+    font-size: 25px;
+    display: block;
+    text-decoration: none;
+    padding: 8px 12px;
+  }
+  #menu_list {
+    width: 100%;
+    background-color: #fff;
+    border-bottom: 1px solid #f2a22a;
+    border-top: 1px solid #f2a22a;
+    padding: 0;
+    position: absolute;
+    top: 80px;
+    left: 0;
+    right: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+  }
+
+  #menu_list a {
+    display: block;
+    text-decoration: none;
+    background-color: #fff;
+    color: #333;
+    padding: 0 17px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+  }
+  #menu_list a:hover {
+    filter: brightness(0.9);
+    color: red;
+  }
+
+  main {
+    padding-top: 80px;
+    display: flex;
+    justify-content: center;
+  }
+  .noidung {
+    max-width: 100vw;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+  }
+  .tieude_menu {
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .tieude_menu .tieude {
+    display: flex;
+    align-items: center;
+    height: 100px;
+    width: 100%;
+    align-content: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .tieude_menu .tieude h1 {
+    font-weight: bold;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  .tieude_menu .theloai {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+    border-top: 1px solid rgba(8, 5, 33, 0.1);
+    border-bottom: 1px solid rgba(8, 5, 33, 0.1);
+  }
+
+  .tieude_menu .theloai a {
+    position: relative;
+    text-decoration: none;
+    padding: 0 15px;
+    color: black;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .tieude_menu .theloai a:hover {
+    color: red;
+  }
+  .tieude_menu .theloai a::after {
+    position: absolute;
+    content: "•";
+    color: red;
+    right: -4px;
+    font-size: 20px;
+  }
+  .tieude_menu .theloai a:last-child::after {
+    content: "";
+  }
+  .menu_monan {
+    width: 100%;
+    padding: 30px 10px 0;
+  }
+  .menu_monan > div:first-child > a {
+    color: red;
+  }
+  .menu_monan i.fa-arrow-up {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    border: 1px solid greenyellow;
+    background-color: greenyellow;
+    border-radius: 45%;
+    opacity: 0.8;
+    padding: 20px;
+    z-index: 200;
+  }
+  .all_menu {
+    max-width: 90vw;
+    height: auto;
+    background-color: #f3f3f4;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+  }
+  .boc_menu {
+    width: 100%;
+    /* padding: 20px 10px 0; */
+  }
+  .menu_mon {
+    height: auto;
+    width: 100%;
+  }
+  .menu_text {
+    padding: 25px;
+    position: relative;
+  }
+  .menu_monan .menu_img {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: auto;
+  }
+  .overlay_btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 10px;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+  }
+  .overlay_btn a {
+    padding: 8px 12px;
+    background-color: #f2a22a;
+    color: black;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  .menu_img:hover img {
+    transform: scale(1.05);
+    /* opacity: 0.8;  -- làm mờ */
+    filter: brightness(0.65); /*làm tối ảnh*/
+  }
+  .menu_img:hover .overlay_btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .menu_monan .menu_img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    padding: 0;
+    transition: all 0.3s ease;
+  }
+  .all_menu .menu_text i {
+    color: #ffd43b;
+    font-size: 21px;
+    line-height: 1;
+  }
+  .all_menu .menu_text a {
+    text-decoration: none;
+  }
+  .all_menu .menu_text a.title {
+    line-height: 2;
+    color: black;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  .boc_menu .menu_mon {
+    border-bottom: 1px solid #ff6600;
+    border-radius: 0 0 10px 10px;
+  }
+  .menu_text a.category {
+    position: absolute;
+    right: 0;
+    top: -18px;
+    transform: translateX(-25px);
+    padding: 6px 16px;
+    background-color: red;
+    color: white;
+    font-weight: 600;
+  }
+  .menu_text p.descrption {
+    margin: 5px 0 20px;
+    color: #525064;
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+  .all_menu .dat_hang {
+    display: flex;
+    align-items: center;
+  }
+
+  .all_menu .dat_hang a {
+    padding: 9px 16px;
+    color: black;
+    font-weight: 540;
+    letter-spacing: 1px;
+    font-size: 20px;
+    border: 1px solid #cac8cf;
+    transition: background-color 0.5s ease, color 0.3s ease;
+  }
+  .all_menu .dat_hang a:hover {
+    background-color: red;
+    color: white;
+  }
+
+  .all_menu .dat_hang h3 {
+    margin-left: 30px;
+    color: red;
+  }
+
+  /* view-all-menu viewall_btn common_menu*/
+  .viewall_btn {
+    height: 50px;
+    width: 100%;
+    margin-top: 50px;
+    /* background-color: #f3f3f4; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .viewall_btn a {
+    background-color: #f2a22a;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #000;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 -20px 30px rgba(0, 0, 0, 0.2);
+  }
+  .viewall_btn a:hover {
+    color: red;
+  }
+
+  .container_mon {
+    max-width: 85%;
+    width: 100%;
+    height: auto;
+    background-color: rgb(245, 239, 239);
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5000;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+  .container_mon > button {
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    padding: 20px;
+    background-color: #f2a22a;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  .container_mon .img_mon {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .container_mon .img_mon img {
+    width: 100%;
+    border-radius: 6px;
+  }
+  .container_mon .noidung_mon {
+    width: 100%;
+    margin-top: 10px;
+    line-height: 35px;
+  }
+  .noidung_mon .option {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .noidung_mon .option .tick_chon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 5px;
+  }
+  .noidung_mon .option .tick_chon input {
+    flex: 0.5;
+  }
+  .tick_chon .gan {
+    flex: 4;
+  }
+  .tick_chon .xa {
+    flex: 3;
+  }
+
+  .noidung_mon .option .tick_chon span {
+    line-height: 1.4;
+  }
+
+  .them_bot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 0;
+  }
+  .them_bot > input {
+    width: 60px;
+    text-align: center;
+    line-height: 25px;
+  }
+  .them_bot > button {
+    width: 35px;
+    height: 35px;
+    background-color: #ab162c;
+    color: #fff;
+    border-radius: 5px;
+  }
+
+  .addtocard {
+    display: flex;
+    gap: 10px;
+    background-color: #f2a22a;
+    width: 50%;
+    align-items: center;
+    justify-content: center;
+    margin-top: 25px;
+    font-weight: 600;
+  }
+  .addtocard a {
+    text-decoration: none;
+    color: black;
+  }
+  #thongbao_themmon {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #dff0d8;
+    color: #3c763d;
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    font-weight: bold;
+    transition: opacity 0.5s ease;
+    opacity: 0;
+  }
+
+  #popup_overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: brightness(40%);
+    background: rgba(0, 0, 0, 0.5); /* Tối nền */
+    z-index: 1000;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  body {
+    font-size: 18px;
+    padding: 30px;
+    background-color: #fdfdfd;
+  }
+
+  /* Header adjustments for desktop */
+  header {
+    position: static; /* Remove fixed position */
+    height: auto;
+    box-shadow: none; /* Remove shadow */
+    border-bottom: none; /* Remove border */
+    padding: 30px 0; /* More padding */
+  }
+  .header-inner {
+    max-width: 1200px; /* Wider header */
+    margin: 0 auto; /* Center header content */
+    display: flex;
+    justify-content: space-between; /* Space between logo and menu */
+  }
+  #menu {
+    display: none; /* Hide hamburger menu */
+  }
+  #menu_list {
+    display: flex !important; /* Always show menu list */
+    position: static;
+    width: auto;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    gap: 30px; /* Space out menu items */
+  }
+  #menu_list a {
+    height: auto;
+    padding: 5px 0;
+    background-color: transparent;
+    color: #333;
+    font-weight: 600;
+    font-size: 1.1em;
+    transition: color 0.3s ease;
+  }
+  #menu_list a:hover {
+    background-color: transparent;
+    color: #e74c3c; /* Red on hover */
+  }
+
+  /* Main content adjustments */
+  main {
+    padding-top: 0; /* No padding-top needed for static header */
+    display: block; /* Change to block for better flow */
+    max-width: 1200px; /* Max width for content */
+    margin: 0 auto; /* Center content */
+  }
+  .noidung {
+    max-width: 100%; /* Use full width of main container */
+    padding: 40px 0; /* More vertical padding */
+  }
+  .tieude_menu {
+    width: 100%;
+    margin-bottom: 30px; /* Space below title section */
+  }
+  .tieude_menu .tieude h1 {
+    font-family: "Playfair Display", serif; /* Elegant font for title */
+    font-size: 3.5em; /* Larger title */
+    margin-bottom: 20px;
+    text-align: center; /* Ensure it's centered */
+  }
+  .tieude_menu .theloai {
+    height: auto; /* Allow height to adjust */
+    padding: 15px 0; /* More padding */
+    border-top: 2px solid rgba(8, 5, 33, 0.1); /* Thicker border */
+    border-bottom: 2px solid rgba(8, 5, 33, 0.1);
+    gap: 25px; /* Space between categories */
+  }
+  .tieude_menu .theloai a {
+    font-size: 1.1em; /* Slightly larger category text */
+    padding: 0 10px; /* Adjust padding */
+  }
+
+  /* Menu items grid layout */
+  .menu_monan {
+    max-width: 100%; /* Use full width of main container */
+    padding: 0 20px; /* Add horizontal padding */
+  }
+  .all_menu {
+    display: grid; /* Grid layout for items */
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(250px, 1fr)
+    ); /* 4 columns, responsive */
+    gap: 30px; /* Larger gap between items */
+    background-color: transparent; /* Remove background */
+    margin: 0; /* Remove margin */
+    justify-content: center; /* Center items in grid */
+  }
+  .boc_menu {
+    width: auto; /* Let grid handle width */
+    background-color: #fff; /* White background for each card */
+    border-radius: 12px; /* Rounded corners for cards */
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1); /* Softer, larger shadow */
+    overflow: hidden; /* Ensure content respects border-radius */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smoother transitions */
+  }
+  .boc_menu:hover {
+    transform: translateY(-8px); /* More pronounced lift effect on hover */
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+  }
+  .menu_monan .menu_img {
+    height: 200px; /* Fixed height for images, adjusted for 4 columns */
+    position: relative; /* For overlay positioning */
+  }
+  .menu_monan .menu_img img {
+    object-fit: cover; /* Ensure images cover the area */
+    border-radius: 12px 12px 0 0; /* Rounded top corners for image */
+    transition: transform 0.3s ease, filter 0.3s ease; /* Smooth image transitions */
+  }
+  .overlay_btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 15px; /* More space between buttons */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .menu_img:hover .overlay_btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .overlay_btn a {
+    padding: 10px 15px; /* Larger buttons */
+    background-color: rgba(
+      242,
+      162,
+      42,
+      0.9
+    ); /* Slightly transparent background */
+    color: white; /* White icons */
+    text-decoration: none;
+    border-radius: 50%; /* Circular buttons */
+    font-size: 1.2em; /* Larger icons */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  .overlay_btn a:hover {
+    background-color: #e0911f;
+    transform: scale(1.1); /* Pop effect on hover */
+  }
+
+  .menu_text {
+    padding: 20px; /* Consistent padding, slightly reduced */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Distribute content vertically */
+    height: calc(100% - 200px); /* Adjust height based on image height */
+  }
+  .menu_text p:first-child {
+    /* Star rating container */
+    margin-bottom: 8px; /* Reduced margin */
+  }
+  .menu_text a.category {
+    position: static; /* Remove absolute positioning */
+    transform: none;
+    align-self: flex-start; /* Align to start */
+    margin-bottom: 8px; /* Reduced space below category */
+    padding: 6px 15px; /* Smaller padding */
+    border-radius: 15px; /* More rounded pill shape */
+    background-color: #e74c3c; /* Consistent red */
+    font-size: 0.85em;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .menu_text a.title {
+    font-size: 1.4em; /* Slightly smaller title for 4 columns */
+    margin-bottom: 12px; /* Reduced margin */
+    font-weight: 700;
+    color: #2c3e50; /* Darker title color */
+  }
+  .menu_text p.descrption {
+    font-size: 0.9em; /* Adjusted description font size */
+    line-height: 1.5;
+    color: #7f8c8d; /* Lighter description color */
+    margin-bottom: 15px; /* Reduced space below description */
+    flex-grow: 1; /* Allow description to take available space */
+  }
+  .dat_hang {
+    display: flex;
+    justify-content: space-between; /* Space between button and price */
+    align-items: center;
+    margin-top: 10px; /* Reduced space above order section */
+    padding-top: 10px;
+    border-top: 1px solid #eee; /* Subtle separator */
+  }
+  .dat_hang a {
+    padding: 10px 20px; /* Slightly smaller button */
+    font-size: 1em;
+    border-radius: 6px; /* More rounded button */
+    background-color: #f2a22a; /* Orange button */
+    color: white; /* White text */
+    border: none; /* No border */
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  .dat_hang a:hover {
+    background-color: #e0911f;
+    transform: translateY(-2px); /* Slight lift on hover */
+  }
+  .dat_hang h3 {
+    font-size: 1.5em; /* Slightly smaller price */
+    color: #e74c3c; /* Red price */
+    font-weight: 700;
+  }
+
+  /* Scroll to top button */
+  .menu_monan > div:first-child > a {
+    position: fixed;
+    right: 40px;
+    bottom: 40px;
+    z-index: 200;
+    display: none; /* Controlled by JS, hidden by default */
+  }
+  .menu_monan i.fa-arrow-up {
+    background-color: #2ecc71; /* Green color */
+    color: white;
+    border-radius: 50%;
+    padding: 18px;
+    font-size: 22px;
+    opacity: 0.9;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+  }
+  .menu_monan i.fa-arrow-up:hover {
+    opacity: 1;
+    background-color: #27ae60;
+  }
+
+  /* View All Menu button - Enhanced for Desktop */
+  .viewall-menu {
+    margin-top: 70px; /* Tăng khoảng cách trên */
+    padding-bottom: 70px; /* Tăng khoảng cách dưới */
+  }
+  .viewall_btn a {
+    padding: 18px 40px; /* Tăng padding để nút lớn hơn */
+    font-size: 1.3em; /* Tăng kích thước chữ */
+    border-radius: 50px; /* Bo tròn hoàn toàn để tạo hình viên thuốc */
+    background: linear-gradient(
+      45deg,
+      #f2a22a,
+      #ff8c00
+    ); /* Thêm gradient màu cam */
+    color: white; /* Đổi màu chữ thành trắng */
+    font-weight: bold; /* Làm đậm chữ */
+    letter-spacing: 1.5px; /* Tăng khoảng cách chữ */
+    text-transform: uppercase; /* Chuyển chữ hoa */
+    box-shadow: 0 8px 20px rgba(242, 162, 42, 0.4); /* Đổ bóng nổi bật hơn */
+    transition: all 0.3s ease; /* Chuyển động mượt mà hơn cho tất cả */
+    border: none; /* Đảm bảo không có border */
+    cursor: pointer; /* Thêm con trỏ dạng pointer */
+  }
+  .viewall_btn a:hover {
+    background: linear-gradient(
+      45deg,
+      #ff8c00,
+      #f2a22a
+    ); /* Đảo ngược gradient khi hover */
+    transform: translateY(-5px) scale(1.02); /* Nâng lên và phóng to nhẹ */
+    box-shadow: 0 12px 25px rgba(242, 162, 42, 0.6); /* Đổ bóng mạnh hơn khi hover */
+  }
+
+  /* Popup for adding item details - Enhanced for Desktop */
+  .container_mon {
+    max-width: 700px; /* Wider popup */
+    height: auto; /* Auto height */
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.55); /* Stronger, deeper shadow */
+    background-color: #ffffff; /* White background */
+    display: flex; /* Use flexbox for layout inside popup */
+    flex-direction: row; /* Arrange content in a row */
+    gap: 30px; /* Space between image and content */
+    position: fixed; /* Ensure fixed positioning */
+    top: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Adjust for element's own size */
+    z-index: 1001; /* Ensure it's on top */
+  }
+  .container_mon > button {
+    padding: 18px;
+    font-size: 1.6em;
+    width: 55px;
+    height: 55px;
+    background-color: #e74c3c; /* Red close button */
+    color: white;
+    border: none;
+    top: 20px;
+    right: 20px;
+    border-radius: 50%; /* Ensure it's perfectly round */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  .container_mon > button:hover {
+    background-color: #c0392b; /* Darker red on hover */
+    transform: rotate(90deg); /* Spin effect on close button */
+  }
+  .container_mon .img_mon {
+    flex: 1; /* Take available space */
+    height: auto; /* Auto height */
+    display: block;
+    min-width: 250px; /* Minimum width for image */
+  }
+  .container_mon .img_mon img {
+    width: 100%;
+    height: 100%; /* Fill container height */
+    object-fit: cover; /* Ensure image covers area */
+    border-radius: 15px; /* Rounded corners */
+  }
+  .noidung_mon {
+    flex: 1.5; /* Take more space for content */
+    margin-top: 0; /* No top margin */
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .noidung_mon h3 {
+    font-family: "Playfair Display", serif; /* Elegant font for title */
+    font-size: 2.5em; /* Larger popup title */
+    margin-bottom: 20px;
+    color: #2c3e50;
+  }
+  .noidung_mon h5 {
+    font-size: 1.4em;
+    margin-bottom: 18px;
+    color: #34495e; /* Darker subtitle */
+    font-weight: 600;
+  }
+  .noidung_mon .option {
+    gap: 20px;
+    margin-bottom: 35px;
+  }
+  .noidung_mon .option .tick_chon {
+    padding: 15px 0;
+    font-size: 1.2em;
+    color: #34495e;
+    border-bottom: 1px dashed #eee; /* Dashed separator */
+  }
+  .noidung_mon .option .tick_chon:last-child {
+    border-bottom: none;
+  }
+  .noidung_mon .option .tick_chon input {
+    transform: scale(1.3); /* Larger checkbox */
+    margin-right: 10px;
+  }
+  .tick_chon .gan {
+    flex: 4;
+    font-weight: 500;
+  }
+  .tick_chon .xa {
+    flex: 3;
+    text-align: right;
+    font-weight: 600;
+    color: #e74c3c; /* Red price for options */
+  }
+
+  .them_bot {
+    gap: 30px;
+    padding: 35px 0;
+    margin-bottom: 40px;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    justify-content: center; /* Center quantity controls */
+  }
+  .them_bot > input {
+    width: 100px;
+    padding: 15px 10px;
+    font-size: 1.5em;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    text-align: center;
+    -moz-appearance: textfield; /* Hide arrows for Firefox */
+  }
+  .them_bot > input::-webkit-outer-spin-button,
+  .them_bot > input::-webkit-inner-spin-button {
+    -webkit-appearance: none; /* Hide arrows for Chrome, Safari */
+    margin: 0;
+  }
+  .them_bot > button {
+    width: 55px;
+    height: 55px;
+    font-size: 2.2em;
+    background-color: #e74c3c;
+    border-radius: 50%;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  .them_bot > button:hover {
+    background-color: #c0392b;
+    transform: scale(1.05);
+  }
+  .them_bot p {
+    font-size: 2.5em;
+    color: #e74c3c;
+    font-weight: 700;
+    margin-left: auto; /* Push price to the right */
+  }
+  .addtocard {
+    width: 90%; /* Adjust width for desktop */
+    margin: 0 auto; /* Center button */
+    padding: 22px;
+    font-size: 1.4em;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    background: linear-gradient(
+      45deg,
+      #f2a22a,
+      #ff8c00
+    ); /* Orange gradient for add to cart */
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  .addtocard:hover {
+    background: linear-gradient(
+      45deg,
+      #ff8c00,
+      #f2a22a
+    ); /* Invert gradient on hover */
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  }
+  .addtocard .icon_giohang {
+    font-size: 1.8em;
+    margin-right: 15px;
+    color: white;
+  }
+  .addtocard a {
+    font-size: 1.5em;
+    color: white; /* White text for button */
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  /* Notification message */
+  #thongbao_themmon {
+    position: fixed;
+    top: 20px; /* Adjust to top of the screen */
+    left: 50%; /* Center horizontally */
+    right: auto; /* Remove right positioning */
+    transform: translateX(-50%); /* Adjust for element's own width */
+    padding: 20px 35px;
+    font-size: 1.3em;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    background-color: #dff0d8;
+    color: #3c763d;
+    font-weight: bold;
+    animation: fadeInOut 4s forwards; /* Animation for notification */
+  }
+
+  /* Keyframe animation for notification */
+  @keyframes fadeInOut {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    10% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    90% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  }
+}
